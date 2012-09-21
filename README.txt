@@ -24,6 +24,11 @@ developed with and often used with scut.
 
 Both 'scut' and 'cols' are documented in the included 'scut_cols_HOWTO.html'
 
+In addition, there is a crude web interface to scut (webscut) to allow naive users
+access to its charms.  Both the form and perl cgi are in the webscut dir,
+but are sorely lacking in documentation.  If you want to see what it looks
+like in action, try: <http://moo.nac.usi.edu/scut>
+
 'stats' is a utility to consume all numeric-like data fed to it via STDIN
 and emit some useful descriptive statistics. 'stats -h' will give you all 
 the help you need.

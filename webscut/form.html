@@ -1,0 +1,183 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>scut file joiner</title>
+<link rel="stylesheet" type="text/css" href="view.css" media="all">
+<script type="text/javascript" src="view.js"></script>
+
+</head>
+<body id="main_body" >
+	
+	<img id="top" src="top.png" alt="">
+	<div id="form_container">
+	
+		<h1><a>scut file joiner</a></h1>
+		<form action="http://moo.nac.uci.edu/cgi-bin/scut_cgi.pl" enctype="multipart/form-data" method="post" >
+					<div class="form_description">
+			<h2>scut file joiner</h2>
+			<p> Use this form to join 2 files on a common column and simultaneously extract columns from both files into a common output.  The <a href="http://goo.gl/7JiF">commandline version</a> is much more powerful, but this should make the basics available to you.  
+			<p> The <em>Needle file</em> is typically the shorter file; the <em>Haystack file</em> is the larger file, but there is no functional difference. All of both files will be matched. 
+			<p> The 2 input files have to be <em>PLAIN TEXT</em>, not MS Word or Excel files.  The columns should be delimited by TABs or one of the other available delimiters (the commandline version can use any <a href="http://en.wikipedia.org/wiki/Regular_expression"> regular expression</a>).  The 'Key' columns are the ones that have to match as a basis for extracting more columns from the 2 files.  You can extract other columns from each file in any order (but columns from the Needle file will be to the left and Haystack columns will be to the right).
+			</p>
+		</div>
+		<li class="section_break">
+			<h2>Input Options</h2>
+			<p></p>
+		</li>
+		<ul >
+		
+<table cellpadding="0" cellspacing="0" border="0" rules="all">
+  <tr>
+    <th align="center">Needle File Options</th>
+    <th align="center">Haystack File Options</th>
+  </tr>
+<tr>
+	<td>
+	<li id="NEEDLE_FILE" >
+		<label class="description" for="element_1">'Needle' File </label>
+		<div>
+			<input id="element_1" name="NEEDLE_FILE" class="element file" type="file"/> 
+		</div> <p class="guidelines" id="guide_1"><small>Select shorter file containing a key column to match with the key column from the 'Haystack' file</small></p> 
+	</li>
+	</td>
+		
+	<td>
+	<li id="HAYSTACK_FILE" >
+		<label class="description" for="element_2">'Haystack File' </label>
+		<div>
+			<input id="element_2" name="HAYSTACK_FILE" class="element file" type="file"/> 
+		</div> <p class="guidelines" id="guide_2"><small>Larger 'Haystack file containing a key column that needs to be matched with the key column in the 'Needle' file.</small></p> 
+		</li>
+		</td>
+</tr>
+
+
+<tr>
+	<td>
+	<li id="NEEDLE_KEY_COL" >
+		<label class="description" for="element_3"> Key Column from 'Needle' File </label>
+		<div>
+			<input id="element_3" name="NEEDLE_KEY_COL" class="element text small" type="text" maxlength="2" value=""/> 
+		</div><p class="guidelines" id="guide_3"><small>Enter the 0-based column number that will be used to match the column in the 'Haystack' file</small></p> 
+	</li>
+	</td>
+		
+	<td>
+	<li id="HAYSTACK_KEY_COL" >
+		<label class="description" for="element_4"> Key Column from 'Haystack' File </label>
+		<div>
+			<input id="element_4" name="HAYSTACK_KEY_COL" class="element text small" type="text" maxlength="2" value=""/> 
+		</div><p class="guidelines" id="guide_4"><small>Key column in the 'Haystack' file that the 'Needle' file key column will be matched to.</small></p> 
+	</li>
+	</td>
+</tr>
+
+<tr>
+	<td>
+	<li>
+		<label class="description" for="element_5">Columns wanted from 'Needle' file  </label>
+		<div>
+			<input id="element_5" name="NEEDLE_COLS" class="element text large" type="text" maxlength="255" value=""/> 
+		</div><p class="guidelines" id="guide_5"><small>'ALL' for all columns; otherwise type in space-separated column numbers where first one is zero.  You can change the order and duplicate columns if wanted: ie '4 3 7 7 0'</small></p> 
+	</li>
+	</td>
+	
+	<td>
+	<li>
+		<label class="description" for="element_6">Columns wanted from 'Haystack" file </label>
+		<div>
+			<input id="element_6" name="HAYSTACK_COLS" class="element text large" type="text" maxlength="255" value=""/> 
+		</div><p class="guidelines" id="guide_6"><small>'ALL' for all columns; otherwise space-separated numbers where first is zero.  You can change the order and duplicate columns if wanted: ie '4 3 7 7 0'</small></p> 
+	</li>
+	</td>
+</tr>
+
+<tr>
+	<td>
+	<li id="NEEDLE_DELIM" >
+		<label class="description" for="element_8">'Needle'  file delimiter </label>
+		<div>
+		<select class="element select medium" id="element_8" name="NEEDLE_DELIM"> 
+			<option value="" selected="selected"></option>
+<option value="TAB" SELECTED >TAB</option>
+<option value="\s+" >whitespace</option>
+<option value="," >comma</option>
+<option value=";" >semi-colon</option>
+<option value=":" >colon</option>
+
+		</select>
+		</div><p class="guidelines" id="guide_8"><small>Choose the field delimiter that separates the columns in the 'Needle' file.</small></p> 
+	</li>
+	</td>
+	
+	<td>
+	<li id="HAYSTACK_DELIM" >
+		<label class="description" for="element_9">'Haystack' file delimiter </label>
+		<div>
+		<select class="element select medium" id="element_9" name="HAYSTACK_DELIM"> 
+			<option value="" selected="selected"></option>
+<option value="TAB" SELECTED>TAB</option>
+<option value="\s+" >whitespace</option>
+<option value="," >comma</option>
+<option value=";" >semi-colon</option>
+<option value=":" >colon</option>
+
+		</select>
+		</div><p class="guidelines" id="guide_9"><small>Choose the field delimiter that separates the columns in the 'Haystack' file.</small></p> 
+	</li>
+	</td>
+</tr>
+
+</table>	
+
+<li class="section_break">
+<input TYPE=checkbox  NAME="CASE_INSEN"> Make Key column comparisons case INsensitive.					
+</li>	
+
+	
+<li class="section_break">
+
+<h2>Output Options</h2>
+			<p></p>
+</li>		
+<li>
+		<label class="description" for="element_10">Output file delimiter </label>
+		<div>
+		<select class="element select medium" id="element_10" name="OUTPUT_DELIM"> 
+			<option value="" selected="selected"></option>
+<option  value="TAB" SELECTED >TAB</option>
+<option value=" " >space</option>
+<option value="," >comma</option>
+<option value=";" >semi-colon</option>
+<option value=":" >colon</option>
+
+		</select>
+		</div><p class="guidelines" id="guide_10"><small>Select the output delimiter you want to use to separate the fields in the output (matching) file.</small></p> 
+</li>		
+
+<li>
+		<label class="description" for="element_11">Needle/Haystack column labels? </label>
+		<span>
+			<input id="element_11_1" name="LABELS" class="element radio" type="radio" value="1" CHECKED/>
+<label class="choice" for="element_11_1">Yes</label>
+<input id="element_11_2" name="LABELS" class="element radio" type="radio" value="2" />
+<label class="choice" for="element_11_2">No</label>
+
+		</span><p class="guidelines" id="guide_11"><small>'Yes' will retain the original column headers from the Needle and Haystack files.
+'No' will omit them.</small></p> 
+</li>
+			
+<li class="buttons">
+	<input type="hidden" name="form_id" value="383843" />
+	<input id="saveForm" class="button_text" type="submit" name="submit" value="Submit" />
+</li>
+</ul>
+</form>	
+<div id="footer">
+			Generated by <a href="http://www.phpform.org">pForm</a>
+</div>
+</div>
+	<img id="bottom" src="bottom.png" alt="">
+	</body>
+</html>
