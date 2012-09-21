@@ -6,7 +6,7 @@ v0.5, Apr 3rd, 2012
 
 Summary
 -------
-scut is a short perl script that acts as a better (if slower) 'cut', and  
+'scut' is a short perl script that acts as a better (if slower) 'cut', and  
 extracts arbitrary columns to be selected based on regexes you supply.  It also has
 a 'join' function not unlike the *nix
 http://www-128.ibm.com/developerworks/linux/library/l-textutils.html#9[join] command.
@@ -14,7 +14,7 @@ http://www-128.ibm.com/developerworks/linux/library/l-textutils.html#9[join] com
 Being unoptimized perl, it is considerably slower than 'cut' but it can do
 things that cut can't dream of, so if you have 100s of GB of input to slice
 & dice, it may be worthwhile to spend some time learning the finer points
-of cut and awk, but it you just need to chew thru 100s of MB to GBs of text,
+of 'cut' and 'awk', but it you just need to chew thru 100s of MB to GBs of text,
 scut may be of interest.
 
 In addition to scut, there are 2 other small utilities here.
@@ -22,13 +22,17 @@ In addition to scut, there are 2 other small utilities here.
 'cols' is a utility to 'columnize' lots of irregularly spaced data,
 developed with and often used with scut.
 
+Both 'scut' and 'cols' are documented in the included 'scut_cols_HOWTO.html'
+
 'stats' is a utility to consume all numeric-like data fed to it via STDIN
-and emit some useful descriptive statistics.
+and emit some useful descriptive statistics. 'stats -h' will give you all 
+the help you need.
 
 eg, calculate the file size distribution in the current directory:
 
-
-   % ls -l | cut -c31-42 |stats --dist=2 --x=20 --y=10
+----------------------------------------------------------------------
+   $ ls -l | cut -c31-42 |stats --dist=2 --x=20 --y=10
+or $ ls -l | scut -f=4  |stats --dist=2 --x=20 --y=10
 
    Sum       158401735            158.4 MB total
    Number    503                  in 503 files
@@ -61,3 +65,4 @@ eg, calculate the file size distribution in the current directory:
    |**      ************
    +--------------------
 
+----------------------------------------------------------------------
