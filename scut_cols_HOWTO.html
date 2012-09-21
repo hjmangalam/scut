@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="generator" content="AsciiDoc 8.6.6">
+<title>scut &amp; cols - utilities to slice, re-order, join, and view columnar data</title>
+<style type="text/css">
+/* Shared CSS for AsciiDoc xhtml11 and html5 backends */
+
+/* Default font. */
+body {
+  font-family: Georgia,serif;
+}
+
+/* Title font. */
+h1, h2, h3, h4, h5, h6,
+div.title, caption.title,
+thead, p.table.header,
+#toctitle,
+#author, #revnumber, #revdate, #revremark,
+#footer {
+  font-family: Arial,Helvetica,sans-serif;
+}
+
+body {
+  margin: 1em 5% 1em 5%;
+}
+
+a {
+  color: blue;
+  text-decoration: underline;
+}
+a:visited {
+  color: fuchsia;
+}
+
+em {
+  font-style: italic;
+  color: navy;
+}
+
+strong {
+  font-weight: bold;
+  color: #083194;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #527bbd;
+  margin-top: 1.2em;
+  margin-bottom: 0.5em;
+  line-height: 1.3;
+}
+
+h1, h2, h3 {
+  border-bottom: 2px solid silver;
+}
+h2 {
+  padding-top: 0.5em;
+}
+h3 {
+  float: left;
+}
+h3 + * {
+  clear: left;
+}
+h5 {
+  font-size: 1.0em;
+}
+
+div.sectionbody {
+  margin-left: 0;
+}
+
+hr {
+  border: 1px solid silver;
+}
+
+p {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+ul, ol, li > p {
+  margin-top: 0;
+}
+ul > li     { color: #aaa; }
+ul > li > * { color: black; }
+
+pre {
+  padding: 0;
+  margin: 0;
+}
+
+#author {
+  color: #527bbd;
+  font-weight: bold;
+  font-size: 1.1em;
+}
+#email {
+}
+#revnumber, #revdate, #revremark {
+}
+
+#footer {
+  font-size: small;
+  border-top: 2px solid silver;
+  padding-top: 0.5em;
+  margin-top: 4.0em;
+}
+#footer-text {
+  float: left;
+  padding-bottom: 0.5em;
+}
+#footer-badges {
+  float: right;
+  padding-bottom: 0.5em;
+}
+
+#preamble {
+  margin-top: 1.5em;
+  margin-bottom: 1.5em;
+}
+div.imageblock, div.exampleblock, div.verseblock,
+div.quoteblock, div.literalblock, div.listingblock, div.sidebarblock,
+div.admonitionblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+div.admonitionblock {
+  margin-top: 2.0em;
+  margin-bottom: 2.0em;
+  margin-right: 10%;
+  color: #606060;
+}
+
+div.content { /* Block element content. */
+  padding: 0;
+}
+
+/* Block element titles. */
+div.title, caption.title {
+  color: #527bbd;
+  font-weight: bold;
+  text-align: left;
+  margin-top: 1.0em;
+  margin-bottom: 0.5em;
+}
+div.title + * {
+  margin-top: 0;
+}
+
+td div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content div.title:first-child {
+  margin-top: 0.0em;
+}
+div.content + div.title {
+  margin-top: 0.0em;
+}
+
+div.sidebarblock > div.content {
+  background: #ffffee;
+  border: 1px solid #dddddd;
+  border-left: 4px solid #f0f0f0;
+  padding: 0.5em;
+}
+
+div.listingblock > div.content {
+  border: 1px solid #dddddd;
+  border-left: 5px solid #f0f0f0;
+  background: #f8f8f8;
+  padding: 0.5em;
+}
+
+div.quoteblock, div.verseblock {
+  padding-left: 1.0em;
+  margin-left: 1.0em;
+  margin-right: 10%;
+  border-left: 5px solid #f0f0f0;
+  color: #888;
+}
+
+div.quoteblock > div.attribution {
+  padding-top: 0.5em;
+  text-align: right;
+}
+
+div.verseblock > pre.content {
+  font-family: inherit;
+  font-size: inherit;
+}
+div.verseblock > div.attribution {
+  padding-top: 0.75em;
+  text-align: left;
+}
+/* DEPRECATED: Pre version 8.2.7 verse style literal block. */
+div.verseblock + div.attribution {
+  text-align: left;
+}
+
+div.admonitionblock .icon {
+  vertical-align: top;
+  font-size: 1.1em;
+  font-weight: bold;
+  text-decoration: underline;
+  color: #527bbd;
+  padding-right: 0.5em;
+}
+div.admonitionblock td.content {
+  padding-left: 0.5em;
+  border-left: 3px solid #dddddd;
+}
+
+div.exampleblock > div.content {
+  border-left: 3px solid #dddddd;
+  padding-left: 0.5em;
+}
+
+div.imageblock div.content { padding-left: 0; }
+span.image img { border-style: none; }
+a.image:visited { color: white; }
+
+dl {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+dt {
+  margin-top: 0.5em;
+  margin-bottom: 0;
+  font-style: normal;
+  color: navy;
+}
+dd > *:first-child {
+  margin-top: 0.1em;
+}
+
+ul, ol {
+    list-style-position: outside;
+}
+ol.arabic {
+  list-style-type: decimal;
+}
+ol.loweralpha {
+  list-style-type: lower-alpha;
+}
+ol.upperalpha {
+  list-style-type: upper-alpha;
+}
+ol.lowerroman {
+  list-style-type: lower-roman;
+}
+ol.upperroman {
+  list-style-type: upper-roman;
+}
+
+div.compact ul, div.compact ol,
+div.compact p, div.compact p,
+div.compact div, div.compact div {
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
+}
+
+tfoot {
+  font-weight: bold;
+}
+td > div.verse {
+  white-space: pre;
+}
+
+div.hdlist {
+  margin-top: 0.8em;
+  margin-bottom: 0.8em;
+}
+div.hdlist tr {
+  padding-bottom: 15px;
+}
+dt.hdlist1.strong, td.hdlist1.strong {
+  font-weight: bold;
+}
+td.hdlist1 {
+  vertical-align: top;
+  font-style: normal;
+  padding-right: 0.8em;
+  color: navy;
+}
+td.hdlist2 {
+  vertical-align: top;
+}
+div.hdlist.compact tr {
+  margin: 0;
+  padding-bottom: 0;
+}
+
+.comment {
+  background: yellow;
+}
+
+.footnote, .footnoteref {
+  font-size: 0.8em;
+}
+
+span.footnote, span.footnoteref {
+  vertical-align: super;
+}
+
+#footnotes {
+  margin: 20px 0 20px 0;
+  padding: 7px 0 0 0;
+}
+
+#footnotes div.footnote {
+  margin: 0 0 5px 0;
+}
+
+#footnotes hr {
+  border: none;
+  border-top: 1px solid silver;
+  height: 1px;
+  text-align: left;
+  margin-left: 0;
+  width: 20%;
+  min-width: 100px;
+}
+
+div.colist td {
+  padding-right: 0.5em;
+  padding-bottom: 0.3em;
+  vertical-align: top;
+}
+div.colist td img {
+  margin-top: 0.3em;
+}
+
+@media print {
+  #footer-badges { display: none; }
+}
+
+#toc {
+  margin-bottom: 2.5em;
+}
+
+#toctitle {
+  color: #527bbd;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin-top: 1.0em;
+  margin-bottom: 0.1em;
+}
+
+div.toclevel1, div.toclevel2, div.toclevel3, div.toclevel4 {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+div.toclevel2 {
+  margin-left: 2em;
+  font-size: 0.9em;
+}
+div.toclevel3 {
+  margin-left: 4em;
+  font-size: 0.9em;
+}
+div.toclevel4 {
+  margin-left: 6em;
+  font-size: 0.9em;
+}
+
+span.aqua { color: aqua; }
+span.black { color: black; }
+span.blue { color: blue; }
+span.fuchsia { color: fuchsia; }
+span.gray { color: gray; }
+span.green { color: green; }
+span.lime { color: lime; }
+span.maroon { color: maroon; }
+span.navy { color: navy; }
+span.olive { color: olive; }
+span.purple { color: purple; }
+span.red { color: red; }
+span.silver { color: silver; }
+span.teal { color: teal; }
+span.white { color: white; }
+span.yellow { color: yellow; }
+
+span.aqua-background { background: aqua; }
+span.black-background { background: black; }
+span.blue-background { background: blue; }
+span.fuchsia-background { background: fuchsia; }
+span.gray-background { background: gray; }
+span.green-background { background: green; }
+span.lime-background { background: lime; }
+span.maroon-background { background: maroon; }
+span.navy-background { background: navy; }
+span.olive-background { background: olive; }
+span.purple-background { background: purple; }
+span.red-background { background: red; }
+span.silver-background { background: silver; }
+span.teal-background { background: teal; }
+span.white-background { background: white; }
+span.yellow-background { background: yellow; }
+
+span.big { font-size: 2em; }
+span.small { font-size: 0.6em; }
+
+span.underline { text-decoration: underline; }
+span.overline { text-decoration: overline; }
+span.line-through { text-decoration: line-through; }
+
+
+/*
+ * xhtml11 specific
+ *
+ * */
+
+tt {
+  font-family: monospace;
+  font-size: inherit;
+  color: navy;
+}
+
+div.tableblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+div.tableblock > table {
+  border: 3px solid #527bbd;
+}
+thead, p.table.header {
+  font-weight: bold;
+  color: #527bbd;
+}
+p.table {
+  margin-top: 0;
+}
+/* Because the table frame attribute is overriden by CSS in most browsers. */
+div.tableblock > table[frame="void"] {
+  border-style: none;
+}
+div.tableblock > table[frame="hsides"] {
+  border-left-style: none;
+  border-right-style: none;
+}
+div.tableblock > table[frame="vsides"] {
+  border-top-style: none;
+  border-bottom-style: none;
+}
+
+
+/*
+ * html5 specific
+ *
+ * */
+
+.monospaced {
+  font-family: monospace;
+  font-size: inherit;
+  color: navy;
+}
+
+table.tableblock {
+  margin-top: 1.0em;
+  margin-bottom: 1.5em;
+}
+thead, p.tableblock.header {
+  font-weight: bold;
+  color: #527bbd;
+}
+p.tableblock {
+  margin-top: 0;
+}
+table.tableblock {
+  border-width: 3px;
+  border-spacing: 0px;
+  border-style: solid;
+  border-color: #527bbd;
+  border-collapse: collapse;
+}
+th.tableblock, td.tableblock {
+  border-width: 1px;
+  padding: 4px;
+  border-style: solid;
+  border-color: #527bbd;
+}
+
+table.tableblock.frame-topbot {
+  border-left-style: hidden;
+  border-right-style: hidden;
+}
+table.tableblock.frame-sides {
+  border-top-style: hidden;
+  border-bottom-style: hidden;
+}
+table.tableblock.frame-none {
+  border-style: hidden;
+}
+
+th.tableblock.halign-left, td.tableblock.halign-left {
+  text-align: left;
+}
+th.tableblock.halign-center, td.tableblock.halign-center {
+  text-align: center;
+}
+th.tableblock.halign-right, td.tableblock.halign-right {
+  text-align: right;
+}
+
+th.tableblock.valign-top, td.tableblock.valign-top {
+  vertical-align: top;
+}
+th.tableblock.valign-middle, td.tableblock.valign-middle {
+  vertical-align: middle;
+}
+th.tableblock.valign-bottom, td.tableblock.valign-bottom {
+  vertical-align: bottom;
+}
+
+
+/*
+ * manpage specific
+ *
+ * */
+
+body.manpage h1 {
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  border-top: 2px solid silver;
+  border-bottom: 2px solid silver;
+}
+body.manpage h2 {
+  border-style: none;
+}
+body.manpage div.sectionbody {
+  margin-left: 3em;
+}
+
+@media print {
+  body.manpage div#toc { display: none; }
+}
+@media screen {
+  body {
+    max-width: 50em; /* approximately 80 characters wide */
+    margin-left: 16em;
+  }
+
+  #toc {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 13em;
+    padding: 0.5em;
+    padding-bottom: 1.5em;
+    margin: 0;
+    overflow: auto;
+    border-right: 3px solid #f8f8f8;
+    background-color: white;
+  }
+
+  #toc .toclevel1 {
+    margin-top: 0.5em;
+  }
+
+  #toc .toclevel2 {
+    margin-top: 0.25em;
+    display: list-item;
+    color: #aaaaaa;
+  }
+
+  #toctitle {
+    margin-top: 0.5em;
+  }
+}
+</style>
+<script type="text/javascript">
+/*<![CDATA[*/
+var asciidoc = {  // Namespace.
+
+/////////////////////////////////////////////////////////////////////
+// Table Of Contents generator
+/////////////////////////////////////////////////////////////////////
+
+/* Author: Mihai Bazon, September 2002
+ * http://students.infoiasi.ro/~mishoo
+ *
+ * Table Of Content generator
+ * Version: 0.4
+ *
+ * Feel free to use this script under the terms of the GNU General Public
+ * License, as long as you do not remove or alter this notice.
+ */
+
+ /* modified by Troy D. Hanson, September 2006. License: GPL */
+ /* modified by Stuart Rackham, 2006, 2009. License: GPL */
+
+// toclevels = 1..4.
+toc: function (toclevels) {
+
+  function getText(el) {
+    var text = "";
+    for (var i = el.firstChild; i != null; i = i.nextSibling) {
+      if (i.nodeType == 3 /* Node.TEXT_NODE */) // IE doesn't speak constants.
+        text += i.data;
+      else if (i.firstChild != null)
+        text += getText(i);
+    }
+    return text;
+  }
+
+  function TocEntry(el, text, toclevel) {
+    this.element = el;
+    this.text = text;
+    this.toclevel = toclevel;
+  }
+
+  function tocEntries(el, toclevels) {
+    var result = new Array;
+    var re = new RegExp('[hH]([2-'+(toclevels+1)+'])');
+    // Function that scans the DOM tree for header elements (the DOM2
+    // nodeIterator API would be a better technique but not supported by all
+    // browsers).
+    var iterate = function (el) {
+      for (var i = el.firstChild; i != null; i = i.nextSibling) {
+        if (i.nodeType == 1 /* Node.ELEMENT_NODE */) {
+          var mo = re.exec(i.tagName);
+          if (mo && (i.getAttribute("class") || i.getAttribute("className")) != "float") {
+            result[result.length] = new TocEntry(i, getText(i), mo[1]-1);
+          }
+          iterate(i);
+        }
+      }
+    }
+    iterate(el);
+    return result;
+  }
+
+  var toc = document.getElementById("toc");
+  if (!toc) {
+    return;
+  }
+
+  // Delete existing TOC entries in case we're reloading the TOC.
+  var tocEntriesToRemove = [];
+  var i;
+  for (i = 0; i < toc.childNodes.length; i++) {
+    var entry = toc.childNodes[i];
+    if (entry.nodeName == 'div'
+     && entry.getAttribute("class")
+     && entry.getAttribute("class").match(/^toclevel/))
+      tocEntriesToRemove.push(entry);
+  }
+  for (i = 0; i < tocEntriesToRemove.length; i++) {
+    toc.removeChild(tocEntriesToRemove[i]);
+  }
+
+  // Rebuild TOC entries.
+  var entries = tocEntries(document.getElementById("content"), toclevels);
+  for (var i = 0; i < entries.length; ++i) {
+    var entry = entries[i];
+    if (entry.element.id == "")
+      entry.element.id = "_toc_" + i;
+    var a = document.createElement("a");
+    a.href = "#" + entry.element.id;
+    a.appendChild(document.createTextNode(entry.text));
+    var div = document.createElement("div");
+    div.appendChild(a);
+    div.className = "toclevel" + entry.toclevel;
+    toc.appendChild(div);
+  }
+  if (entries.length == 0)
+    toc.parentNode.removeChild(toc);
+},
+
+
+/////////////////////////////////////////////////////////////////////
+// Footnotes generator
+/////////////////////////////////////////////////////////////////////
+
+/* Based on footnote generation code from:
+ * http://www.brandspankingnew.net/archive/2005/07/format_footnote.html
+ */
+
+footnotes: function () {
+  // Delete existing footnote entries in case we're reloading the footnodes.
+  var i;
+  var noteholder = document.getElementById("footnotes");
+  if (!noteholder) {
+    return;
+  }
+  var entriesToRemove = [];
+  for (i = 0; i < noteholder.childNodes.length; i++) {
+    var entry = noteholder.childNodes[i];
+    if (entry.nodeName == 'div' && entry.getAttribute("class") == "footnote")
+      entriesToRemove.push(entry);
+  }
+  for (i = 0; i < entriesToRemove.length; i++) {
+    noteholder.removeChild(entriesToRemove[i]);
+  }
+
+  // Rebuild footnote entries.
+  var cont = document.getElementById("content");
+  var spans = cont.getElementsByTagName("span");
+  var refs = {};
+  var n = 0;
+  for (i=0; i<spans.length; i++) {
+    if (spans[i].className == "footnote") {
+      n++;
+      var note = spans[i].getAttribute("data-note");
+      if (!note) {
+        // Use [\s\S] in place of . so multi-line matches work.
+        // Because JavaScript has no s (dotall) regex flag.
+        note = spans[i].innerHTML.match(/\s*\[([\s\S]*)]\s*/)[1];
+        spans[i].innerHTML =
+          "[<a id='_footnoteref_" + n + "' href='#_footnote_" + n +
+          "' title='View footnote' class='footnote'>" + n + "</a>]";
+        spans[i].setAttribute("data-note", note);
+      }
+      noteholder.innerHTML +=
+        "<div class='footnote' id='_footnote_" + n + "'>" +
+        "<a href='#_footnoteref_" + n + "' title='Return to text'>" +
+        n + "</a>. " + note + "</div>";
+      var id =spans[i].getAttribute("id");
+      if (id != null) refs["#"+id] = n;
+    }
+  }
+  if (n == 0)
+    noteholder.parentNode.removeChild(noteholder);
+  else {
+    // Process footnoterefs.
+    for (i=0; i<spans.length; i++) {
+      if (spans[i].className == "footnoteref") {
+        var href = spans[i].getElementsByTagName("a")[0].getAttribute("href");
+        href = href.match(/#.*/)[0];  // Because IE return full URL.
+        n = refs[href];
+        spans[i].innerHTML =
+          "[<a href='#_footnote_" + n +
+          "' title='View footnote' class='footnote'>" + n + "</a>]";
+      }
+    }
+  }
+},
+
+install: function(toclevels) {
+  var timerId;
+
+  function reinstall() {
+    asciidoc.footnotes();
+    if (toclevels) {
+      asciidoc.toc(toclevels);
+    }
+  }
+
+  function reinstallAndRemoveTimer() {
+    clearInterval(timerId);
+    reinstall();
+  }
+
+  timerId = setInterval(reinstall, 500);
+  if (document.addEventListener)
+    document.addEventListener("DOMContentLoaded", reinstallAndRemoveTimer, false);
+  else
+    window.onload = reinstallAndRemoveTimer;
+}
+
+}
+asciidoc.install(2);
+/*]]>*/
+</script>
+</head>
+<body class="article">
+<div id="header">
+<h1>scut &amp; cols - utilities to slice, re-order, join, and view columnar data</h1>
+<span id="author">by Harry Mangalam</span><br>
+<span id="email" class="monospaced">&lt;<a href="mailto:harry.mangalam@uci.edu">harry.mangalam@uci.edu</a>&gt;</span><br>
+<span id="revnumber">version 0.5,</span>
+<span id="revdate">Apr 3rd, 2012</span>
+<div id="toc">
+  <div id="toctitle">Table of Contents</div>
+  <noscript><p><b>JavaScript must be enabled in your browser to display the table of contents.</b></p></noscript>
+</div>
+</div>
+<div id="content">
+<div class="sect1">
+<h2 id="_introduction">1. Introduction</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>There is already a very fast (&gt;10x faster than scut) but stupid Linux utility called <em>cut</em> that has some of <em>scut&#8217;s</em> functionality bundled with every Linux distro (try <em>man cut</em>), however, cut has no <a href="http://en.wikipedia.org/wiki/Regular_expression">regular expression</a> (aka regex) capability. It also can&#8217;t process native Excel Spreadsheets, which scut can. <em>scut</em> can mimic <em>cut&#8217;s</em> 2 most popular options (-f and -d), which are aliased appropriately - see below.  <em>scut</em> also contains some functionality of the utility <em>join</em> as well.  If you can use <em>cut</em> conveniently or if you need to repeatedly slice GBs of data, it&#8217;s worthwhile to stay with <em>cut</em>.  If the data requires a regex to slice correctly or you need to re-order the data, it may be worth using <em>scut</em>.</p></div>
+<div class="sect2">
+<h3 id="_web_form">1.1. Web form</h3>
+<div class="paragraph"><p>I&#8217;ve put up a <a href="http://moo.nac.uci.edu/scut/index.html">crude web form for <em>scut</em></a> to allow non-commandline geeks to use scut.  It doesn&#8217;t use or allow all of <em>scut&#8217;s</em> functionality, but it allows use of the file-join features.</p></div>
+</div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_scut_8217_s_cut_functions">2. scut&#8217;s cut functions</h2>
+<div class="sectionbody">
+<div class="admonitionblock">
+<table><tr>
+<td class="icon">
+<img src="./images/icons/note.png" alt="Note">
+</td>
+<td class="content">
+<div class="title"><em>scut</em> mimics most used <em>cut</em> options</div>
+<div class="paragraph"><p><em>scut</em> recently added <em>-f</em> and <em>-d</em> aliases which mimic the 2 most popular options for <em>cut</em>.  So in a situation where you might use cut, you can generally just replace <em>cut</em> with <em>scut</em> to add multi-field and regex capability.  Note that it does not (yet) adjust <em>cut&#8217;s</em> 1-based field spec to <em>scut&#8217;s</em> 0-based field spec.  ie:</p></div>
+<div class="listingblock">
+<div class="content monospaced">
+<pre>ls -l | cut -f 1 -d ' ' # to get the 1st field of the output
+  # can be replaced by:
+ls -l | scut -f 0 -d ' '
+  # but to get the size field, compare:
+ls -l | cut -c24-34  # you have to count the chars to get the right offset
+  # vs
+ls -l | scut -f 4</pre>
+</div></div>
+</td>
+</tr></table>
+</div>
+<div class="paragraph"><p>scut <a href="http://moo.nac.uci.edu/~hjm/scut">(code here)</a> was written originally to find similar lines in 2 different files and output a combined output, sort of like the <a href="http://www-128.ibm.com/developerworks/linux/library/l-textutils.html#9">join command</a> but as I worked on it, I realized that what I was doing was reiterating an SQL engine. Since there were already great SQL engines available, I stopped work on that aspect of it (tho it still works) but it&#8217;s still a better cut than cut (named as a contraction of <em>super-cut</em>, or perhaps <em>the util that does your "scut" work for you</em>.  Anyway, it&#8217;s designed to cut and re-order <em>columns</em> of data from a file. The original functions are still intact, so if you need to look for lines in one file that exist in another file, that should still work as well and if <em>join</em> is unable to do what you need, you might want to try <em>scut</em>.</p></div>
+<div class="paragraph"><p>Consider for example, a long (11 million lines) gene expression data file named <em>OMG</em> that looks like this:</p></div>
+<div class="listingblock">
+<div class="content monospaced">
+<pre>chr10:100018403-100020903;CHR10FS100020403;1    chr10_0 100020403       100020452       0.01
+chr10:100018403-100020903;CHR10FS100019203;1    chr10_1 100019203       100019256       0.22
+chr10:100018403-100020903;CHR10FS100019503;1    chr10_2 100019503       100019559       0.08
+chr10:100018403-100020903;CHR10FS100019903;1    chr10_3 100019903       100019952       0.66
+chr10:100018403-100020903;CHR10FS100020203;1    chr10_4 100020203       100020259       0.26
+chr10:100018403-100020903;CHR10FS100019803;1    chr10_5 100019803       100019853       0.50
+chr10:100018403-100020903;CHR10FS100018703;1    chr10_6 100018703       100018752       0.03
+chr10:100018403-100020903;CHR10FS100018403;1    chr10_7 100018403       100018466       -0.12
+chr10:100018403-100020903;CHR10FS100018903;1    chr10_8 100018903       100018952       -1.05
+chr10:100018403-100020903;CHR10FS100020303;1    chr10_9 100020303       100020364       -0.76
+[continues for 11,353,343 lines]</pre>
+</div></div>
+<div class="paragraph"><p>and you wanted to break it on both <em>;</em> and whitespace (any contiguous number of spaces and and tabs), writing fields <em>1 3 4</em> but in the order <em>3 1 4</em> , and have the output data fields separated by " ^ ", you could do this with scut in a single pass:</p></div>
+<div class="listingblock">
+<div class="content monospaced">
+<pre>scut --id1=';|\s+'  --od=' ^ ' --c1='3 1 4'  &lt; OMG</pre>
+</div></div>
+<div class="paragraph"><p>Out would spring:</p></div>
+<div class="listingblock">
+<div class="content monospaced">
+<pre>chr10_0 ^ CHR10FS100020403 ^ 100020403
+chr10_1 ^ CHR10FS100019203 ^ 100019203
+chr10_2 ^ CHR10FS100019503 ^ 100019503
+chr10_3 ^ CHR10FS100019903 ^ 100019903
+chr10_4 ^ CHR10FS100020203 ^ 100020203
+chr10_5 ^ CHR10FS100019803 ^ 100019803
+chr10_6 ^ CHR10FS100018703 ^ 100018703
+chr10_7 ^ CHR10FS100018403 ^ 100018403
+chr10_8 ^ CHR10FS100018903 ^ 100018903
+chr10_9 ^ CHR10FS100020303 ^ 100020303
+[etc]</pre>
+</div></div>
+<div class="paragraph"><p>The secret here is that scut allows the use of <a href="http://www.perl.com/doc/manual/html/pod/perlre.html">Perl Regular Expressions</a> that can encode just about any pattern. Regular Expressions are both fearsomely confusing and insanely powerful. <a href="http://en.wikipedia.org/wiki/Regular_expression">Wikipedia</a> has a good description.  And if you&#8217;re at UC, you can <a href="http://proquest.safaribooksonline.com/0596528124">read Jeff Friedl&#8217;s <strong>Mastering Regular Expressions</strong> for free via Safari</a></p></div>
+<div class="paragraph"><p>Because <em>scut</em> can break data on arbitrary regexes, you can tame most text data in a single pass, certainly in multiple passes by piping the output of one operation into the input of another.</p></div>
+<div class="paragraph"><p><a href="http://moo.nac.uci.edu/~hjm/scut_help.txt">scut --help</a> will give you the help pages, and the internal code is fairly clear, tho not tremendously well-documented.  It&#8217;s also not entirely free of bugs - some of the routines were written for specific tasks and were not generalized well, but I still find myself using it a lot.</p></div>
+<div class="paragraph"><p>Here&#8217;s another example of scut helping me find out the size distribution of all files in a directory:</p></div>
+<div class="listingblock">
+<div class="content monospaced">
+<pre>ls -l | scut --c1='4' |stats</pre>
+</div></div>
+<div class="paragraph"><p>(note that the GNU <em>ls</em> command shipped with Linux produces a slightly different format than other <em>ls</em> variants.  This one works with GNU <em>ls</em>).</p></div>
+<div class="paragraph"><p>The above command takes the output of ls -l, pipes it into <em>scut</em> which extracts field 4, then pipes that data into <a href="http://moo.nac.uci.edu/~hjm/stats">stats</a>, another Perl utility that generates descriptive stats of whatever goes into it.</p></div>
+<div class="paragraph"><p>it produces: (with [my comments added])</p></div>
+<div class="listingblock">
+<div class="content monospaced">
+<pre>Sum       193109146  [total of 193MB)
+Number    18 [in 18 files]
+Mean      10728285.8888889  [mean size of 10.7MB]
+Median    27761 [but obviously due to some large files]
+Mode      FLAT
+NModes    No # was represented more than once
+Min       0
+Max       73690201 [here's a 73.6MB  reason for the skew]
+Range     73690201
+Variance  401893120826683  [and the rest]
+Std_Dev   20047272.1542529
+SEM       4725187.36152149
+Skew      2.14197169376939
+Std_Skew  3.71000380198295
+Kurtosis  2.96898153032708</pre>
+</div></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_scut_8217_s_join_feature">3. scut&#8217;s join feature</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>The <em>join</em> feature of <em>scut</em> works a little differently than does <em>join</em> itself. For a good example of how <em>join</em> works, see this IBM DeveloperWorks tutorial called <a href="http://www-128.ibm.com/developerworks/linux/library/l-textutils.html#9">Simplify data extraction using Linux text utilities</a></p></div>
+<div class="paragraph"><p>In <em>scut</em>, like <em>join</em>, you have to specify 2 filenames, the key fields, and what fields you want output, but with scut, you can specify different input and output delimiters (which can be multicharacter instead of single character), the fields in any order, and a host of other options. The input delimiter can also be a regex.</p></div>
+<div class="paragraph"><p>If we have a file of needles (called <em>needles</em>) that need to be found in a haystack file (called <em>haystack</em>), and <em>needles</em> looks like this:</p></div>
+<div class="listingblock">
+<div class="content monospaced">
+<pre>apbA
+carA+pyrA
+cdsA+cds
+codA
+ddlA
+dinJ
+dnaX+dnaZ
+fepB
+fhuB
+fixC
+folK
+&lt;etc&gt;</pre>
+</div></div>
+<div class="paragraph"><p>and the <em>haystack</em> file looks like this:</p></div>
+<div class="listingblock">
+<div class="content monospaced">
+<pre>      1     0                 1                2            3            4            5
+      2     b              gene               EC         C1.0         C1.1         C2.0
+      3 b0001              thrL      0.000423101   0.00046544  0.000429262  0.000433869 ...
+      4 b0002  thrA+thrA1+thrA2  1.1.1.3+2.7.2.4  0.001018277  0.001268078  0.001312524 ...
+      5 b0003              thrB         2.7.1.39  0.000517967  0.000457605  0.000582354 ...
+      6 b0004              thrC         4.2.99.2  0.000670075  0.000558063  0.000789501 ...
+      &lt;etc&gt;</pre>
+</div></div>
+<div class="paragraph"><p>and you wanted to match the fields in the single column of the <em>needles</em> file with the <em>gene</em> field in the <em>haystack</em> file, and you wanted the output to include:</p></div>
+<div class="ulist"><ul>
+<li>
+<p>
+haystack columns 1, 0, 2, 5 in that order
+</p>
+</li>
+<li>
+<p>
+the output delimiter being <em>|</em> instead of &lt;TAB&gt;
+</p>
+</li>
+<li>
+<p>
+written to a file called <em>hits</em>
+</p>
+</li>
+</ul></div>
+<div class="paragraph"><p>the command to do so would be:</p></div>
+<div class="listingblock">
+<div class="content monospaced">
+<pre>scut --f1='needles' --f2='haystack' --k1=0 --k2=1  --c2='1 0 2 5'  --od='|' &gt;hits</pre>
+</div></div>
+<div class="paragraph"><p>and the <em>hits</em> file would look like this:</p></div>
+<div class="listingblock">
+<div class="content monospaced">
+<pre>apbA|b0425|1.55E-05|1.34E-05|
+carA+pyrA|b0032|6.3.5.5|0.000155796|
+cdsA+cds|b0175|2.7.7.41|2.91E-05|
+codA|b0337|3.5.4.1|3.20E-05|
+ddlA|b0381|6.3.2.4|0|
+dinJ|b0226|0|0|
+dnaX+dnaZ|b0470|2.7.7.7|4.48E-05|
+&lt;etc&gt;</pre>
+</div></div>
+<div class="paragraph"><p>I&#8217;ve modified scut to handle column specifiers more efficiently. It&#8217;s spelled out in the help section. ie:</p></div>
+<div class="listingblock">
+<div class="content monospaced">
+<pre>      --c1='# # ..'   - the numbers of the columns from file1 that you want
+                         printed out in the order in which you want them.  If
+                         you DON'T want any columns from the file, just
+                         omit the --c1 option completely.
+                         If you want the whole line, type --c1='ALL'.
+
+                         You can also use discontinous ranges like '2:4 8:10'
+                         to print [2 3 4 8 9 10] and decreasing ranges like
+                         '8:4' to print cols [8 7 6 5 4].  You can also negate
+                         columns to remove them from a larger range '9:12' -11'
+                         to print [9 10 12] or 12:1 -7:-4 to print
+                         [12 11 10 9 8 3]. You can also use the 'ALL' keyword
+                         to print all cols and negate the ones you don't
+                         want with negative ranges - 'ALL -8:-14' to print all
+                         columns EXCEPT 8-14.
+
+                         Notes:
+                         1) #s are split on whitespace, not commas.
+                         2) scut also supports Excel-style column specifiers such as:
+         or
+      --c1='A C F ..'    (A B F AD BG etc) for up to 78 columns (-&gt;BZ)  If you want
+                         more, add them to the %excel_ids hash in the code or create an
+                         algorithm that does it right.</pre>
+</div></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_the_cols_utility">4. The cols utility</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>In my work, the input to <em>scut</em> is often a horrendously wide data file that overflows even the widest terminal screens with the tiniest fonts. And even if it didn&#8217;t overflow the terminal, when the data is printed to the terminal, the columns are almost always mismatched due to tab skips (if a field exceeds a tab boundary, it will skip to the next tab). Trying to figure out if a floating point number is the 21st or 22nd field can be trying if you have to do it all day.</p></div>
+<div class="paragraph"><p><em>cols</em> <a href="http://moo.nac.uci.edu/~hjm/cols">(code here)</a> was developed to take the very "wide" files that have 10s of columns and present them in a terminal window so that you don&#8217;t have to import them into a GUI spreadsheet app to check that the parsing operation has gone well.  The output of the <em>scut</em> operation is typically piped to cols and then to <em>less -S</em> to promote easier viewing of long lines.</p></div>
+<div class="paragraph"><p>An example is probably the best way to describe this. The file <em>''DataSet</em>'' is a long file of TAB-separated identifiers and data that has a header line of column IDs prefixed with a hash mark to mark it as a comment in the standard unixy way.</p></div>
+<div class="paragraph"><p>Would you rather try to decipher the column values from this output :</p></div>
+<div class="listingblock">
+<div class="content monospaced">
+<pre>      $ head  -15 DataSet | less -S
+          1 #b      gene    EC      C1.0    C1.1    C2.0    C2.1    C3.0    C3.1    E1.0    E1.1    E2.0    E2.1
+          2 b0001   thrL    0.000423101     0.00046544      0.000429262     0.000433869     0.000250998     0.000
+          3 b0002   thrA+thrA1+thrA2        1.1.1.3+2.7.2.4 0.001018277     0.001268078     0.001312524     0.001
+          4 b0003   thrB    2.7.1.39        0.000517967     0.000457605     0.000582354     0.000640462     0.000
+          5 b0004   thrC    4.2.99.2        0.000670075     0.000558063     0.000789501     0.000801508     0.000
+          6 b0005   0       0       0       2.64E-07        0       0       0       0       0       0       0
+          7 b0006   yaaA    0       0       0       0       0       0       0       0       0       0       0
+          8 b0007   yaaJ    8.52E-06        8.87E-06        1.54E-05        2.74E-05        0       0       0
+          9 b0008   talB    2.2.1.2 0.001160911     0.00118164      0.001263549     0.001345351     0.001103703
+         10 b0009   mog+chlG        1.87E-05        1.91E-05        1.95E-05        1.70E-05        0       0
+         11 b0010   yaaH    0       0       0       0       0       0       0       0       0       0       0
+         12 b0011   0       0       0       0       0       0       0       0       0       2.86E-05        0</pre>
+</div></div>
+<div class="paragraph"><p>or from this output?</p></div>
+<div class="listingblock">
+<div class="content monospaced">
+<pre>     $ head  -15 DataSet | cols | less -S
+          1     0                 1                2            3            4            5            6
+          2    #b              gene               EC         C1.0         C1.1         C2.0         C2.1
+          3 b0001              thrL      0.000423101   0.00046544  0.000429262  0.000433869  0.000250998  0.00026
+          4 b0002  thrA+thrA1+thrA2  1.1.1.3+2.7.2.4  0.001018277  0.001268078  0.001312524  0.001398845  0.00078
+          5 b0003              thrB         2.7.1.39  0.000517967  0.000457605  0.000582354  0.000640462   0.0003
+          6 b0004              thrC         4.2.99.2  0.000670075  0.000558063  0.000789501  0.000801508  0.00055
+          7 b0005                 0                0            0     2.64E-07            0            0
+          8 b0006              yaaA                0            0            0            0            0
+          9 b0007              yaaJ         8.52E-06     8.87E-06     1.54E-05     2.74E-05            0
+         10 b0008              talB          2.2.1.2  0.001160911   0.00118164  0.001263549  0.001345351  0.00110
+         11 b0009          mog+chlG         1.87E-05     1.91E-05     1.95E-05     1.70E-05            0
+         12 b0010              yaaH                0            0            0            0            0</pre>
+</div></div>
+<div class="paragraph"><p>(output of both is from the less pager to avoid wrap artefacts.)</p></div>
+<div class="paragraph"><p>They both looks nice and columnar, but if you look closely, you&#8217;ll see some variants that will drive you straight to Advil after 30 minutes of trying to figure it out, especially if you&#8217;ve side-scrolled enough to miss one of the tab-skips. For example: most of the gene names are short enough to fit in the tab space, but in line 4, <em>''thrA+thrA1+thrA2</em>'' is wide enough to cause a tab-skip which will then throw off the rest of the line. Similarly, in line 9 of the top listing, does the value <em>''0.001345351</em>'' belong to the <em>''C3.0</em>'' or to the <em>''C3.1</em>'' column? Actually, it belongs to the <em>''C2.1</em>'' column as is shown in the second listing, which has columnized it correctly.</p></div>
+<div class="paragraph"><p>Also note that the lower one has column headers inserted (line 1) which give you the 0-based column count (change to 1-based numbering with --ch=1</p></div>
+<div class="paragraph"><p>Note that this utility is meant for visualizing, not actual processing, except in edge cases, as the padding is all spaces. Also the utlity aborts after reading 22 lines, unless told not to.</p></div>
+<div class="paragraph"><p>Here is the help output from <em>''cols --help</em>''</p></div>
+<div class="listingblock">
+<div class="content monospaced">
+<pre>    cols is a small Perl-based utility to view columns of data to help
+    programmers check that the columns correspond to what they want.
+    It strips tabs from the input and pads columns with spaces so it's
+    NOT meant to be used as a pipeline processing tool, only as a checking
+    tool.
+
+    usage: pipe or redirect X-delimited tabular data (where X=TAB by default,
+    but can be set to any Perl regex) to 'cols' with the following options:
+
+    --mw=#  set max width to this many chars or the max per-col width if smaller.
+            Defaults to 20.
+
+    --ml=#  process this many lines of input. (Defaults to 22)
+
+    --ch=#  add a line of column headers (starting at # - defaults to 0)
+             to the output to tell where you are in very wide output
+             (very useful)
+
+    --delim=s the delimiter to use to split the fields (Defaults to TAB)
+              Use 'ws' for whitespace (but you can use '\s+' if you want).
+
+    --help  dumps this help
+
+    Pipe output to 'less -S' to view long lines without wrap and arrow keys to
+    scroll around.
+
+    example:
+              cols --mw=11 --ch=1 &lt;huge.data |less -S</pre>
+</div></div>
+</div>
+</div>
+</div>
+<div id="footnotes"><hr></div>
+<div id="footer">
+<div id="footer-text">
+Version 0.5<br>
+Last updated 2012-08-30 09:47:52 PDT
+</div>
+</div>
+</body>
+</html>

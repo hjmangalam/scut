@@ -1,0 +1,364 @@
+#!/usr/bin/perl
+# by Harry Mangalam, hjm@tacgi.com.
+use strict;
+use vars qw( $wide $dist $Xsize $Ysize $ln $N $sum $Min $Max $XYDist @Data
+    $XRange $XBinSize $XMul @SData $NWH $Median $even $Mean $SumDiffs2 $SumDiffs3 $SumDiffs4 $ValCnt $Val $MaxSoFarValCnt $ModeInd @Dist $jmin $jmax $J $YMax $YBinSize $YMul @XYDist $ModeNum $Mode $S2 $S $Kurtosis $SEM $Skew $StdSkew $gfmt $VERSION $DATE $HELPFILE $HELP
+);
+use Getopt::Long;
+$VERSION = "1.75";
+$DATE = "Jan 11 2012";
+$gfmt = 0;
+$NWH = 0;
+&GetOptions(
+   "wide!"   => \$wide,  # no args - just set to 1
+   "dist=i"  => \$dist,  # 1 for 1-liner, 2 for xy plot with the following vars, 3 for both
+   "x=i"     => \$Xsize, # the # of characters in the X axis
+   "y=i"     => \$Ysize, # the # of lines in the Y axis
+   "help!"   => \$HELP,  # ask for help
+   "h!"      => \$HELP,
+   "nwh!"    => \$NWH,   # No Wide Headers (if repeating wide mode, don't want headers)
+   "ln!"     => \$ln,    # take the ln() of the #s before doing anything.
+   "gfmt!"    => \$gfmt,   # set to Perl's 'general' numeric notation
+);
+
+# 01.11.12 added 'general numeric format, replacing strict sci notation
+# 05.01.08 added comma removal after embarrassing conversation with credit card company
+#  7.14.06 add --sci to format for scientific notation output. ie:
+#  --sci
+#  2.05.01 addded Distribution calc/graph
+#  2.01.01 format change to ease integration (Mode, NMode# split onto separate lines)
+#         Made Labels single words and unambiguous for easier grepping
+
+# 11.10.00 added wide printing (--wide)
+#  9.27.00 adding check for included non-numbers
+#  4.21.00 adding check for FLAT mode, modecount =1
+# 11.24.99 adding Mode, Mode count, Median to output.
+
+$N = 0;
+$sum = 0;
+$Min = $Max = 0;
+if (!defined $Xsize) { $Xsize = 60; }
+if (!defined $Ysize) { $Ysize = 25; }
+if ($HELP) {usage()};
+
+#Zero the DIST array
+for (my $x=0; $x<$Xsize; $x++) {
+  for (my $y=0; $y<$Ysize; $y++) {
+    $XYDist[$x][$y] = ' ';
+  }
+}
+
+while (<>) {
+	$_ = trim($_);
+	my $x = my @arr = split;
+	for (my $i = 0; $i < $x; $i++) {
+    # make sure all the things we're including are number-like
+    # remove commas to prevent rejection downstream
+    $arr[$i] =~ s/,//g;
+   	if (($arr[$i] =~ /\d+|\d*\.\d*|\d+\.\d*[eE]-?\d+/) &&
+      	 ($arr[$i] !~ /[a-df-zA-DF-Z]+/) ) {
+       if ($ln) {
+          if ($arr[$i] > 0) { $arr[$i] = log($arr[$i]); }
+          else {print STDERR "Detected # <= 0 ($arr[$i] @ ~ line $N)- Maybe shouldn't use '--ln'!!\n"}
+       }
+	  	 $sum += $arr[$i]; # sum the numbers as they come in
+       if ($N == 0) {
+          $Min = $Max = $arr[$i];
+       }
+       if ($arr[$i] < $Min) { $Min = $arr[$i]; }
+       if ($arr[$i] > $Max) { $Max = $arr[$i]; }
+       $Data[$N++] = $arr[$i];  # store them for calcing the SD, etc
+      }      
+   }
+}
+# All the numbers sucked in; now calc the values wanted
+
+# autoscale the X axis
+$XRange = $Max - $Min;
+if ($XRange != 0){
+	$XBinSize = $XRange/$Xsize;
+	$XMul = $Xsize/$XRange;
+} else {
+	$XBinSize = -1;
+	$XMul = -1;
+}
+
+# if want to get mode, median, would help to sort $Data
+@SData = sort {$a <=> $b}  @Data;
+
+if ($N % 2 < 0.001) {
+	#then $N is even and we can calc median via...
+  $Median = ($SData[($N-1)/2] + $SData[(($N-1)+2)/2]) / 2;
+	$even = 1;
+} else {
+	# then $N is odd and we can calc median via...
+  $Median = ($SData[($N+1)/2]) ;
+	$even = 0;
+}
+$Mean = $sum / $N;
+$SumDiffs2 = 0;
+$SumDiffs3 = 0;
+$SumDiffs4 = 0;
+
+$MaxSoFarValCnt = 0;
+$ModeInd = 0;
+$ValCnt = 0;
+$Val = $SData[0];
+
+#init Distribution array
+for (my $i=0; $i<$Xsize; $i++){
+  $Dist[$i] = 0;
+}
+$jmin = $jmax = 0;
+
+for (my $i=0; $i < $N; $i++){
+	$SumDiffs2 = $SumDiffs2 + (($Data[$i] - $Mean)**2);
+	$SumDiffs3 = $SumDiffs3 + (($Data[$i] - $Mean)**3);
+	$SumDiffs4 = $SumDiffs4 + (($Data[$i] - $Mean)**4);
+
+	# this next stanza calculates the Mode pointer
+   if ($Val == $SData[$i]) {
+   	# if its another of the same #, incr the counters
+   	$ValCnt++;
+    $Val = $SData[$i];
+   } else { # it's a new value, so check if the run of the last set of #s
+   			# exceeds the longest so far
+   	if ($ValCnt > $MaxSoFarValCnt) {
+      	# and if so, replace the old values with the new 'winners'
+      	$MaxSoFarValCnt = $ValCnt;
+        $ModeInd = $i-1;
+      }
+      # and reset the counters for the new
+      $ValCnt = 0;
+   }
+   $Val = $SData[$i];
+
+   # calc the distribution
+   if ($XMul > 0) {
+		$J = int($Data[$i] * $XMul);
+		if ($J < $jmin) { $jmin = $J; }
+		if ($J > $jmax) { $jmax = $J; }
+		$Dist[$J]++;  # range of Dist should be close to $Xsize
+   } #else {print "\nErr: All #s same, no range, no distribution\n";}
+}
+
+#Scale the Y axis; 1st find out the range for Y
+$YMax = 0;
+for (my $i=0; $i<$jmax; $i++) {
+  if (abs($Dist[$i]) > $YMax) { $YMax = abs($Dist[$i]);}
+}
+if ($YMax == 0) { $YMax = 1;}
+$YBinSize = $YMax/($Ysize-1);
+#print "\nYMax = $YMax\n";
+$YMul = ($Ysize-1) / $YMax;
+for (my $x=0; $x<$Xsize; $x++) {
+  my $y = int($Dist[$x] * $YMul);
+  $XYDist[$x][$y] = '*';
+}
+
+
+if ($XMul > 0) {
+	if ($MaxSoFarValCnt > 1) {
+		$ModeNum = $MaxSoFarValCnt + 1;
+		$Mode = $SData[$ModeInd];
+	} else {
+		$ModeNum = "No # was represented more than once";
+		$Mode = "FLAT";
+	}
+	$S2 = $SumDiffs2 / ($N - 1);
+	$S = sqrt($S2);
+	$Kurtosis = ($SumDiffs4 / (($N-1)*($S**4))) - 3;
+	$SEM = $S / sqrt($N);
+	if ($S > 0 && $N > 3) {
+	$Skew = ($N * $SumDiffs3) / (($N-1) * ($N-2) * ($S ** 3));
+	$StdSkew = $Skew / sqrt(6/$N);
+	}
+}
+
+if (!$wide && $gfmt == 0) {
+   print  "Sum       $sum",
+          "\nNumber    $N",
+          "\nMean      $Mean",
+          "\nMedian    $Median",
+          "\nMode      $Mode  ",
+          "\nNModes    $ModeNum",
+          "\nMin       $Min",
+          "\nMax       $Max",
+          "\nRange     $XRange",
+          "\nVariance  $S2",
+          "\nStd_Dev   $S",
+          "\nSEM       $SEM\n";
+} elsif (!$wide && $gfmt > 0) {  # shorten this post verify
+   printf "Sum       %g", $sum;
+   printf "\nNumber    %g",$N;
+   printf "\nMean      %g",$Mean;
+   printf "\nMedian    %g",$Median;
+   printf "\nMode      %g",$Mode;
+   printf "\nNModes    %g",$ModeNum;
+   printf "\nMin       %g",$Min;
+   printf "\nMax       %g",$Max;
+   printf "\nRange     %g",$XRange;
+   printf "\nVariance  %g",$S2;
+   printf "\nStd_Dev   %g",$S;
+   printf "\nSEM       %g\n",$SEM;
+}
+
+
+   if ($S > 0 && $N > 3 && !$wide) {
+   	if (!$gfmt) {
+         print  "Skew      $Skew",
+	      "\nStd_Skew  $StdSkew",
+         "\nKurtosis  $Kurtosis\n";
+       } else {
+				printf "Skew      %g", $Skew;
+				printf "\nStd_Skew  %g", $StdSkew;
+				printf "\nKurtosis  %g\n", $Kurtosis;
+       }
+   } else {
+	   print STDERR "Std Dev = 0 or N <=3 or printing wide; Skipping Skewness, Std Skewness cal'n.\n";
+   }
+
+
+if ($wide) {
+   if (!$NWH){
+      print  "Sum\tN\tMean\tMedian\tMode\tNModes\tMin\tMax\tRange\tVariance\tStd Dev\tSEM\tSkew\tStd Skew\tKurtosis\n";
+   }
+   if ($gfmt) {
+      printf "%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g", $sum,$N,$Mean,$Median,$Mode,$ModeNum,$Min,$Max,$XRange,$S2,$S,$SEM
+   } else {
+      print "$sum\t$N\t$Mean\t$Median\t$Mode\t$ModeNum\t$Min\t$Max\t$XRange\t$S2\t$S\t$SEM";
+   }
+   if ($S > 0 && $N > 3) {
+       if ($gfmt) {
+          printf "\t%g\t%g\t%g\n", $Skew,$StdSkew,$Kurtosis;
+       } else { print "\t$Skew\t$StdSkew\t$Kurtosis\n";}
+   } else {
+	   print  STDERR "NA\tNA\nStd Dev = 0 or N <=3; Skipping Skewness, Std Skewness, Kurtosis cal'n.\n";
+   }
+}
+
+ # print out the distribution
+ # this way prints it out in 1 line
+ if ($dist == 1 || $dist == 3) {
+   for (my $r=0; $r<($Xsize); $r++) {
+     if ($Dist[$r] < 10) { print $Dist[$r]; }
+     else { print "($Dist[$r])"; }
+   }
+ }
+ # this way prints a little xy graph, if wanted
+my $spacer = "";
+for (my $x=0; $x<($Xsize - 14); $x++) { $spacer = $spacer . " ";}
+
+ if ($XBinSize > 0) {
+	if ($dist == 2 || $dist == 3) {
+		print "\n\nDistribution\nX BinSize $XBinSize\nY BinSize  $YBinSize\n\nYMax:$YMax\n      |";
+		for (my $y=($Ysize-1); $y>=0; $y--) {
+		for (my $x=0; $x<$Xsize; $x++) {
+			print "$XYDist[$x][$y]";
+		}
+		print "\n      |";
+		}
+		for (my $x=0; $x<$Xsize; $x++) { print '-';}
+		print "\n  X Min $spacer        X Max\n";
+        #for (my $x=0; $x<($Xsize - 15); $x++) { print ' ';}
+        #print "X Max: $Max \n";
+        printf "%7.2f %s %12.2f \n", $Min, $spacer, $Max;
+        if (!$ln) {
+            print "\nIf points are jammed at one end, use '--ln' to spread them.\n";
+        }
+	}
+ } else {
+	print "\nINFO: Identical numbers in input; no range, no distribution\n";
+ }
+sub trim($)
+	{
+	my $string = shift;
+	$string =~ s/^\s+//;
+	$string =~ s/\s+$//;
+	return $string;
+}
+
+sub usage {
+my $LESSHELP = <<HELP;
+ stats version: $VERSION, last mod: $DATE
+ 
+ stats is a utility that reads STDIN for all #s, whether in one line
+ or in many (removes commas, only have to be separated by whitespace),
+ calculates some basic stats, then spits them to STDOUT to be grep'ed
+ in the std unixy way.
+
+ usage: stats < file.of.numbers
+     or
+ cmd1 | cmd2 |cmd3 | stats [options]
+
+ where Options are:
+       --wide   writes the stats in 1-line (useful for some
+                  spreadsheet apps)
+       --dist=# plots a distribution function where
+                  where # = 1 = 1-liner distribution
+                            2 = the std xy plot of the data
+                            3 = both 1 liner & longer version
+       --x=#    where # = an integer indicating the # of
+                  characters in the X axis
+       --y=#    ditto for the y axis
+       --help   dumps this help
+       --nwh    'No Wide Headers' (doesn't print headers on
+                  wide output - good for repeating output as
+                  for logging stuff)
+       --ln     take the natural log of the numbers before doing
+                  anything.
+       --gfmt    output in Perl's 'general numeric notation' 
+       
+ eg, calculate the file size distribution in the current directory:
+
+   % ls -l | cut -c31-42 |stats --dist=2 --x=20 --y=10
+
+   Sum       158401735            158.4 MB total
+   Number    503                  in 503 files
+   Mean      314913.986083499     average size of file is 315 KB
+   Median    10204                median size is 10 KB
+   Mode      1024                 mode is 1024 due to ..
+   NModes    33                   .. 33 directories
+   Min       0                    at least 1 empty file
+   Max       27135470             got a whomper of a file at 2.7 MB
+   Variance  2903105341782.66     huge variance
+   Std_Dev   1703850.15238508     etc
+   SEM       75970.9233614217
+   Skew      12.1873963279124
+   Std_Skew  111.588464543135
+   Kurtosis  235.291925985398
+
+
+   Distribution
+   X BinSize 0.186431547
+   Y BinSize  18
+
+   |    *
+   |
+   |   * *
+   |
+   |
+   |      *
+   |  *
+   |
+   |       *
+   |**      ************
+   +--------------------
+
+ Feel free to add whatever additional calculations you want,
+ but if you do and you think they might be of general use,
+ let me know so I can add them to the original.
+ Bug reports, suggestions back to the author (hjm\@tacgi.com)
+
+HELP
+
+$HELPFILE = ".statshelpfile" . $$; # write a hidden helpfile
+open(HF, ">$HELPFILE") or die "Can't open helpfile [$HELPFILE] at __LINE__ \n";
+print HF $LESSHELP;
+close HF;
+system("less $HELPFILE");
+unlink $HELPFILE; # and get rid of it asap
+exit 0;
+}
+
+exit 0;
