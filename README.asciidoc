@@ -23,10 +23,11 @@ In addition to scut, there are 2 other small utilities here.
 developed with and often used with scut.
 
 'stats' is a utility to consume all numeric-like data fed to it via STDIN
-and emit some useful descriptive statistics. ie
+and emit some useful descriptive statistics.
 
-----------------------------------------------------------------
  eg, calculate the file size distribution in the current directory:
+
+----------------------------------------------------------------------
 
    % ls -l | cut -c31-42 |stats --dist=2 --x=20 --y=10
 
@@ -61,4 +62,4 @@ and emit some useful descriptive statistics. ie
    |**      ************
    +--------------------
 
----------------------------------------------------------------- 
+----------------------------------------------------------------------
