@@ -4,11 +4,15 @@ by Harry Mangalam <harry.mangalam@uci.edu>
 v0.5, Apr 3rd, 2012
 :icons:
 //Harry Mangalam mailto:harry.mangalam@uci.edu[harry.mangalam@uci.edu]
+// Working out of the gits dir now..
 // Convert this file to HTML & move to it's final dest with the command:
-// export fileroot="/home/hjm/nacs/scut_cols_HOWTO"; asciidoc -a icons -a toc2 -b html5 -a numbered ${fileroot}.txt; scp ${fileroot}.[ht]*   moo:~/public_html
+// export fileroot="/home/hjm/gits/scut/scut_cols_HOWTO"; asciidoc -a icons -a toc2 -b html5 -a numbered ${fileroot}.txt; scp ${fileroot}.[ht]*   moo:~/public_html
 
 // update svn from BDUC
 // scp ${fileroot}.[ht]*  hmangala@claw1:~/bduc/trunk/sge; ssh hmangala@bduc-login 'cd ~/bduc/trunk/sge; svn update; svn commit -m "new mods to ${fileroot}"'
+
+// Update github
+// cd /home/hjm/gits/scut; git commit -am 'UPDATE THIS MESSAGE'; git push
 
 // see the script itself for boilerplate to push scut to the usual places from bongo
 
@@ -25,6 +29,15 @@ Introduction
 ------------
 
 There is already a very fast (>10x faster than scut) but stupid Linux utility called 'cut' that has some of 'scut's' functionality bundled with every Linux distro (try 'man cut'), however, cut has no http://en.wikipedia.org/wiki/Regular_expression[regular expression] (aka regex) capability. It also can't process native Excel Spreadsheets, which scut can. 'scut' can mimic 'cut's' 2 most popular options (-f and -d), which are aliased appropriately - see below.  'scut' also contains some functionality of the utility 'join' as well.  If you can use 'cut' conveniently or if you need to repeatedly slice GBs of data, it's worthwhile to stay with 'cut'.  If the data requires a regex to slice correctly or you need to re-order the data, it may be worth using 'scut'.
+
+
+Get them here
+-----------
+You can get 'scut', 'cols' and 'stats' by by clicking on the appro link at the https://github.com/hjmangalam/scut[github page] or perhaps a better way to get everything you need is to clone the github rep:
+---------------------------------------------------------------------
+git clone https://github.com/hjmangalam/scut.git
+---------------------------------------------------------------------
+
 
 Web form
 ~~~~~~~~

@@ -783,14 +783,24 @@ asciidoc.install(2);
 <h2 id="_introduction">1. Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>There is already a very fast (&gt;10x faster than scut) but stupid Linux utility called <em>cut</em> that has some of <em>scut&#8217;s</em> functionality bundled with every Linux distro (try <em>man cut</em>), however, cut has no <a href="http://en.wikipedia.org/wiki/Regular_expression">regular expression</a> (aka regex) capability. It also can&#8217;t process native Excel Spreadsheets, which scut can. <em>scut</em> can mimic <em>cut&#8217;s</em> 2 most popular options (-f and -d), which are aliased appropriately - see below.  <em>scut</em> also contains some functionality of the utility <em>join</em> as well.  If you can use <em>cut</em> conveniently or if you need to repeatedly slice GBs of data, it&#8217;s worthwhile to stay with <em>cut</em>.  If the data requires a regex to slice correctly or you need to re-order the data, it may be worth using <em>scut</em>.</p></div>
+</div>
+</div>
+<div class="sect1">
+<h2 id="_get_them_here">2. Get them here</h2>
+<div class="sectionbody">
+<div class="paragraph"><p>You can get <em>scut</em>, <em>cols</em> and <em>stats</em> by by clicking on the appro link at the <a href="https://github.com/hjmangalam/scut">github page</a> or perhaps a better way to get everything you need is to clone the github rep:</p></div>
+<div class="listingblock">
+<div class="content monospaced">
+<pre>git clone https://github.com/hjmangalam/scut.git</pre>
+</div></div>
 <div class="sect2">
-<h3 id="_web_form">1.1. Web form</h3>
+<h3 id="_web_form">2.1. Web form</h3>
 <div class="paragraph"><p>I&#8217;ve put up a <a href="http://moo.nac.uci.edu/scut/index.html">crude web form for <em>scut</em></a> to allow non-commandline geeks to use scut.  It doesn&#8217;t use or allow all of <em>scut&#8217;s</em> functionality, but it allows use of the file-join features.</p></div>
 </div>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_scut_8217_s_cut_functions">2. scut&#8217;s cut functions</h2>
+<h2 id="_scut_8217_s_cut_functions">3. scut&#8217;s cut functions</h2>
 <div class="sectionbody">
 <div class="admonitionblock">
 <table><tr>
@@ -881,7 +891,7 @@ Kurtosis  2.96898153032708</pre>
 </div>
 </div>
 <div class="sect1">
-<h2 id="_scut_8217_s_join_feature">3. scut&#8217;s join feature</h2>
+<h2 id="_scut_8217_s_join_feature">4. scut&#8217;s join feature</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>The <em>join</em> feature of <em>scut</em> works a little differently than does <em>join</em> itself. For a good example of how <em>join</em> works, see this IBM DeveloperWorks tutorial called <a href="http://www-128.ibm.com/developerworks/linux/library/l-textutils.html#9">Simplify data extraction using Linux text utilities</a></p></div>
 <div class="paragraph"><p>In <em>scut</em>, like <em>join</em>, you have to specify 2 filenames, the key fields, and what fields you want output, but with scut, you can specify different input and output delimiters (which can be multicharacter instead of single character), the fields in any order, and a host of other options. The input delimiter can also be a regex.</p></div>
@@ -977,7 +987,7 @@ dnaX+dnaZ|b0470|2.7.7.7|4.48E-05|
 </div>
 </div>
 <div class="sect1">
-<h2 id="_the_cols_utility">4. The cols utility</h2>
+<h2 id="_the_cols_utility">5. The cols utility</h2>
 <div class="sectionbody">
 <div class="paragraph"><p>In my work, the input to <em>scut</em> is often a horrendously wide data file that overflows even the widest terminal screens with the tiniest fonts. And even if it didn&#8217;t overflow the terminal, when the data is printed to the terminal, the columns are almost always mismatched due to tab skips (if a field exceeds a tab boundary, it will skip to the next tab). Trying to figure out if a floating point number is the 21st or 22nd field can be trying if you have to do it all day.</p></div>
 <div class="paragraph"><p><em>cols</em> <a href="http://moo.nac.uci.edu/~hjm/cols">(code here)</a> was developed to take the very "wide" files that have 10s of columns and present them in a terminal window so that you don&#8217;t have to import them into a GUI spreadsheet app to check that the parsing operation has gone well.  The output of the <em>scut</em> operation is typically piped to cols and then to <em>less -S</em> to promote easier viewing of long lines.</p></div>
@@ -1059,7 +1069,7 @@ dnaX+dnaZ|b0470|2.7.7.7|4.48E-05|
 <div id="footer">
 <div id="footer-text">
 Version 0.5<br>
-Last updated 2012-08-30 09:47:52 PDT
+Last updated 2012-10-16 15:54:16 PDT
 </div>
 </div>
 </body>
