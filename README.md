@@ -8,7 +8,7 @@ v0.5, Apr 3rd, 2012
 'scut' is a short perl script that acts as a better (if slower) 'cut', and  
 extracts arbitrary columns to be selected based on regexes you supply.  It also has
 a 'join' function not unlike the *nix
-http://www-128.ibm.com/developerworks/linux/library/l-textutils.html#9[join] command.
+[join](http://www-128.ibm.com/developerworks/linux/library/l-textutils.html#9) command.
 
 Being unoptimized perl, it is considerably slower than 'cut' but it can do
 things that cut can't dream of, so if you have 100s of GB of input to slice
@@ -21,7 +21,8 @@ In addition to scut, there are 2 other small utilities here.
 'cols' is a utility to 'columnize' lots of irregularly spaced data,
 developed with and often used with scut.
 
-Both 'scut' and 'cols' are documented in the included 'scut_cols_HOWTO.html'
+Both 'scut' and 'cols' are documented in the included 
+[scut_cols_HOWTO.html](http://moo.nac.uci.edu/~hjm/scut_cols_HOWTO.html)
 
 In addition, there is a crude web interface to scut (webscut) to allow naive users
 access to its dubious charms.  Both the form and perl cgi are in the webscut dir,
