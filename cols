@@ -4,7 +4,7 @@ use Getopt::Long;
 #if ( @ARGV == 0 ) { die "\nNo data - check the help (cols --help)\n\n";}
 
 &GetOptions("mw=i"     => \$max,    # max width of cols to print;
-			"ml=i"     => \$lines,  # max lines to print (~head)
+            "ml=i"     => \$lines,  # max lines to print (~head)
             "ch=i"     => \$ch,     # add a #-prefixed 0-based rown of col headers
             "help!"    => \$help,   # print the help
             "delim=s"  => \$delim,  # the delmiter to use
@@ -15,8 +15,8 @@ use Getopt::Long;
 if (!defined $max)     { $max = 20;} # have to define if you want it wider or naroower.
 if (!defined $lines)   { $lines = 10;}
 if (!defined $ch)      { $ch = 0;}
-if (!defined $delim)   { $delim = "\t";}
-if ($delim =~ /ws/)    { $delim = "\s+"} # ws = whitespace
+if (!defined $delim)   { $delim = "\\t";}
+if ($delim eq "ws")    { $delim = "\\s+"} # ws = whitespace
 if (!defined $skip)    { $skip = 0;}
 if (defined $skip) {$lines += $skip;}
 
@@ -43,6 +43,9 @@ but can be set to any Perl regex) to 'cols' with the following options:
 
 --delim=s the delimiter to use to split the fields (Defaults to TAB)
           Use 'ws' for whitespace (but you can use '\s+' if you want).
+          Since the delim string is passed in verbatim to perl, you can
+          use any perl regex you want to split on. ie  --delim='[:\s]+'
+          will break on any number of either ':' or 'whitespaces'.
 
 --help  dumps this help
 

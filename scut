@@ -3,17 +3,16 @@
 # That license can be found at: <http://www.gnu.org/licenses/gpl.html>
 # I'd appreciate a note if you find it useful or find/fix a bug, or can
 # offer a suggestion.
-# kick it to moo, dabrick, claw1, login
+# kick it to moo, dabrick, 
 # export filename="/home/hjm/bin/scut";
 # scp ${filename} moo:~/public_html
 # scp ${filename} moo:~/bin
 # scp ${filename}   dabrick:~/bin
-# scp ${filename} hmangala@claw1:~/bin
-# ssh -t hmangala@claw1 'sudo cp ~/bin/scut /usr/local/bin/scut'
-# ssh -t hmangala@bduc-login 'sudo cp ~/bin/scut /usr/local/bin/scut'
 
-# Version 1.34
+# Version 1.35
 # Changes:
+#   1.35   03-18-15 - drop a dotfile when there's no statistics module so the messages
+#                     don't repeat.
 #   1.34   01-06-12 - added -f as alias to --c1 and -d as alias to --id1
 #                     for better 'cut' compatibility
 #   1.33   07-27-10 - corrected code in column_ranges() so '0' is considered a (+) # for col selection purposes.  Otherwise spec'ing the 0th col gets ignored.
@@ -59,10 +58,13 @@ use Getopt::Long;
 # these 2 should be done in evals, so we can 'use' them only when needed.
 
 # the following stats module is only used in 1 little option.
-eval {require Statistics::Descriptive}; print STDERR "[Statistics::Descriptive] not found; will try to continue.\n" if $@;
-# use Spreadsheet::ParseExcel; # for Excel parsing..
-# use File::Temp qw/ :POSIX /; # for semi-auto temp file creation
-
+eval {require Statistics::Descriptive}; 
+if ($@) { # touch a junkfile so we don't keep repeating this error
+  if (! -e ".scutjunk") { 
+    my $e = `echo "this file can be deleted" > .scutjunk`;
+    print STDERR "[Statistics::Descriptive] not found; will try to continue.\n" 
+  }
+}
 use Env qw(PATH HOME);
 
 use vars qw(
@@ -75,8 +77,8 @@ $s_count $s_mn $s_sd $s_sem $s_sum $stat $stats $sync @tt $ver $VERSION $WC
 $iR $iC  $oWkS  $oWkC $xlf $oBook $od $oExcel $TMP $file $Yjoint
 $i $nbits @cbits $e $r $nn @ll $cutc1 $cutid1
 );
-$VERSION = "1.34";
-$DATE = "Jan 6, 2012";
+$VERSION = "1.35";
+$DATE = "Mar 18, 2015";
 $stats =0;
 $ver = 0;
 $excl = 0;
@@ -103,8 +105,8 @@ $f1 = "STDERR";
 'BT' => 71,'BU' => 72,'BV' => 73,'BW' => 74,'BX' => 75,'BY' => 76,'BZ' => 77);
 
 &GetOptions("f=s"       => \$c1,   # cols to print from f1 (alias to --c1 for 'cut'-like behavior
-			"d=s"       => \$id1,  # input delimiter for stdin or file1
-			"f1=s"      => \$f1,      # file name 1
+	    "d=s"       => \$id1,  # input delimiter for stdin or file1
+	    "f1=s"      => \$f1,      # file name 1
             "f2=s"      => \$f2,      # file name 2
             "k1=i"      => \$k1,      # key column 1
             "k2=i"      => \$k2,      # key column 2
