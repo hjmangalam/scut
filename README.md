@@ -8,7 +8,8 @@ v0.5, Apr 3rd, 2012
 'scut' is a short perl script that acts as a better (if slower) 'cut', and  
 extracts arbitrary columns to be selected based on regexes you supply.  It also has
 a 'join' function not unlike the *nix
-[join](http://www-128.ibm.com/developerworks/linux/library/l-textutils.html#9) command.
+[join](http://www.ibm.com/developerworks/linux/tutorials/l-gnutex/) 
+(search for 'join') command.
 
 Being unoptimized perl, it is considerably slower than 'cut' but it can do
 things that cut can't dream of, so if you have 100s of GB of input to slice
