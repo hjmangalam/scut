@@ -40,7 +40,7 @@ eg, calculate the file size distribution in the current directory:
    $ ls -l | cut -c31-42 |stats --dist=2 --x=20 --y=10
 or $ ls -l | scut -f=4  |stats --dist=2 --x=20 --y=10
 
-# which yeilds:
+# which yields:
 
    Sum       158401735            158.4 MB total
    Number    503                  in 503 files
