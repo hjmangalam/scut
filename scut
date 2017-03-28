@@ -3,11 +3,17 @@
 # That license can be found at: <http://www.gnu.org/licenses/gpl.html>
 # I'd appreciate a note if you find it useful or find/fix a bug, or can
 # offer a suggestion.
+
+# don't forget!!  using git!
+# git add  scut                # stage the file for the commit
+# git commit -m 'commit message'    # stages the commit
+# git push                          # pushes the commit to github
+
 # kick it to moo, dabrick, 
-# export filename="/home/hjm/bin/scut";
-# scp ${filename} moo:~/public_html
-# scp ${filename} moo:~/bin
-# scp ${filename}   dabrick:~/bin
+# export filename="/home/hjm/bin/scut"; scp ${filename} moo:~/public_html; scp ${filename} moo:~/bin;  scp ${filename}   dabrick:~/bin
+# cd ~/gits/scut; cp ~/bin/scut .; git add scut; git commit -m 'commit message'; git push
+
+
 
 # Version 1.35
 # Changes:
