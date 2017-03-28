@@ -1,8 +1,19 @@
 #!/usr/bin/perl
 # by Harry Mangalam, hjm@tacgi.com.
+
+# don't forget!!  using git!
+# git add  stats                # stage the file for the commit
+# git commit -m 'commit message'    # stages the commit
+# git push                          # pushes the commit to github
+
+# after significant changes, update the tarballs that need it and cp to moo for distribution; update the scut github
+# cd ~/gits/scut; cp ~/bin/stats .; git add stats; git commit -m 'commit message'; git push
+
+
 use strict;
 use vars qw( $wide $dist $Xsize $Ysize $ln $N $sum $Min $Max $XYDist @Data
     $XRange $XBinSize $XMul @SData $NWH $Median $even $Mean $SumDiffs2 $SumDiffs3 $SumDiffs4 $ValCnt $Val $MaxSoFarValCnt $ModeInd @Dist $jmin $jmax $J $YMax $YBinSize $YMul @XYDist $ModeNum $Mode $S2 $S $Kurtosis $SEM $Skew $StdSkew $gfmt $VERSION $DATE $HELPFILE $HELP
+    $QUIET
 );
 use Getopt::Long;
 $VERSION = "1.75";
@@ -16,11 +27,13 @@ $NWH = 0;
    "y=i"     => \$Ysize, # the # of lines in the Y axis
    "help!"   => \$HELP,  # ask for help
    "h!"      => \$HELP,
+   "quiet!"  => \$QUIET, # shhhhh!
    "nwh!"    => \$NWH,   # No Wide Headers (if repeating wide mode, don't want headers)
    "ln!"     => \$ln,    # take the ln() of the #s before doing anything.
    "gfmt!"    => \$gfmt,   # set to Perl's 'general' numeric notation
 );
 
+# 03.12.2014 added '--quiet' to silence non-fatal warnings.
 # 01.11.12 added 'general numeric format, replacing strict sci notation
 # 05.01.08 added comma removal after embarrassing conversation with credit card company
 #  7.14.06 add --sci to format for scientific notation output. ie:
@@ -59,7 +72,7 @@ while (<>) {
       	 ($arr[$i] !~ /[a-df-zA-DF-Z]+/) ) {
        if ($ln) {
           if ($arr[$i] > 0) { $arr[$i] = log($arr[$i]); }
-          else {print STDERR "Detected # <= 0 ($arr[$i] @ ~ line $N)- Maybe shouldn't use '--ln'!!\n"}
+          elsif (! $QUIET) { print STDERR "Detected # <= 0 ($arr[$i] @ ~ line $N)- Maybe shouldn't use '--ln'!!\n"}
        }
 	  	 $sum += $arr[$i]; # sum the numbers as they come in
        if ($N == 0) {
@@ -68,7 +81,7 @@ while (<>) {
        if ($arr[$i] < $Min) { $Min = $arr[$i]; }
        if ($arr[$i] > $Max) { $Max = $arr[$i]; }
        $Data[$N++] = $arr[$i];  # store them for calcing the SD, etc
-      }      
+      }
    }
 }
 # All the numbers sucked in; now calc the values wanted
@@ -214,10 +227,9 @@ if (!$wide && $gfmt == 0) {
 				printf "\nStd_Skew  %g", $StdSkew;
 				printf "\nKurtosis  %g\n", $Kurtosis;
        }
-   } else {
+   } elsif (! $QUIET) {
 	   print STDERR "Std Dev = 0 or N <=3 or printing wide; Skipping Skewness, Std Skewness cal'n.\n";
    }
-
 
 if ($wide) {
    if (!$NWH){
@@ -232,7 +244,7 @@ if ($wide) {
        if ($gfmt) {
           printf "\t%g\t%g\t%g\n", $Skew,$StdSkew,$Kurtosis;
        } else { print "\t$Skew\t$StdSkew\t$Kurtosis\n";}
-   } else {
+   } elsif (! $QUIET) {
 	   print  STDERR "NA\tNA\nStd Dev = 0 or N <=3; Skipping Skewness, Std Skewness, Kurtosis cal'n.\n";
    }
 }
@@ -281,7 +293,7 @@ sub trim($)
 sub usage {
 my $LESSHELP = <<HELP;
  stats version: $VERSION, last mod: $DATE
- 
+
  stats is a utility that reads STDIN for all #s, whether in one line
  or in many (removes commas, only have to be separated by whitespace),
  calculates some basic stats, then spits them to STDOUT to be grep'ed
@@ -307,8 +319,9 @@ my $LESSHELP = <<HELP;
                   for logging stuff)
        --ln     take the natural log of the numbers before doing
                   anything.
-       --gfmt    output in Perl's 'general numeric notation' 
-       
+       --gfmt    output in Perl's 'general numeric notation'
+       --quiet   decrease amount of error messages
+
  eg, calculate the file size distribution in the current directory:
 
    % ls -l | cut -c31-42 |stats --dist=2 --x=20 --y=10
