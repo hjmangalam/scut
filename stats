@@ -1,5 +1,5 @@
-#!/usr/bin/perl
-# by Harry Mangalam, hjm@tacgi.com.
+#!/usr/bin/env perl
+# by Harry Mangalam, hjmangalam@gmail.com.com.
 
 # don't forget!!  using git!
 # git add  stats                # stage the file for the commit
@@ -12,12 +12,12 @@
 
 use strict;
 use vars qw( $wide $dist $Xsize $Ysize $ln $N $sum $Min $Max $XYDist @Data
-    $XRange $XBinSize $XMul @SData $NWH $Median $even $Mean $SumDiffs2 $SumDiffs3 $SumDiffs4 $ValCnt $Val $MaxSoFarValCnt $ModeInd @Dist $jmin $jmax $J $YMax $YBinSize $YMul @XYDist $ModeNum $Mode $S2 $S $Kurtosis $SEM $Skew $StdSkew $gfmt $VERSION $DATE $HELPFILE $HELP
+    $XRange $XBinSize $XMul @SData $NWH $Median $even $Mean $SumDiffs2 $SumDiffs3 $SumDiffs4 $ValCnt $Val $MaxSoFarValCnt $ModeInd @Dist $jmin $jmax $J $YMax $YBinSize $YMul @XYDist $ModeNum $Mode $S2 $S $Kurtosis $SEM $Skew $StdSkew $gfmt $VERSION $DATE $HELPFILE $HELP $ConfIntLow $ConfIntHi
     $QUIET
 );
 use Getopt::Long;
-$VERSION = "1.75";
-$DATE = "Jan 11 2012";
+$VERSION = "1.76";
+$DATE = "June 15, 2017";
 $gfmt = 0;
 $NWH = 0;
 &GetOptions(
@@ -33,6 +33,7 @@ $NWH = 0;
    "gfmt!"    => \$gfmt,   # set to Perl's 'general' numeric notation
 );
 
+# 06.15.2017  added 95% confidence intervals
 # 03.12.2014 added '--quiet' to silence non-fatal warnings.
 # 01.11.12 added 'general numeric format, replacing strict sci notation
 # 05.01.08 added comma removal after embarrassing conversation with credit card company
@@ -185,6 +186,8 @@ if ($XMul > 0) {
 	if ($S > 0 && $N > 3) {
 	$Skew = ($N * $SumDiffs3) / (($N-1) * ($N-2) * ($S ** 3));
 	$StdSkew = $Skew / sqrt(6/$N);
+	$ConfIntHi  = $Mean + (1.96 * $S);
+	$ConfIntLow = $Mean - (1.96 * $S);
 	}
 }
 
@@ -200,9 +203,10 @@ if (!$wide && $gfmt == 0) {
           "\nRange     $XRange",
           "\nVariance  $S2",
           "\nStd_Dev   $S",
-          "\nSEM       $SEM\n";
+          "\nSEM       $SEM",
+          "\n95% Conf  $ConfIntLow to $ConfIntHi\n";
 } elsif (!$wide && $gfmt > 0) {  # shorten this post verify
-   printf "Sum       %g", $sum;
+   printf   "Sum       %g", $sum;
    printf "\nNumber    %g",$N;
    printf "\nMean      %g",$Mean;
    printf "\nMedian    %g",$Median;
@@ -213,7 +217,8 @@ if (!$wide && $gfmt == 0) {
    printf "\nRange     %g",$XRange;
    printf "\nVariance  %g",$S2;
    printf "\nStd_Dev   %g",$S;
-   printf "\nSEM       %g\n",$SEM;
+   printf "\nSEM       %g",$SEM;
+   printf "\n95% Conf  %g to %g\n", $ConfIntLow, $ConfIntHi;
 }
 
 
@@ -233,12 +238,12 @@ if (!$wide && $gfmt == 0) {
 
 if ($wide) {
    if (!$NWH){
-      print  "Sum\tN\tMean\tMedian\tMode\tNModes\tMin\tMax\tRange\tVariance\tStd Dev\tSEM\tSkew\tStd Skew\tKurtosis\n";
+      print  "Sum\tN\tMean\tMedian\tMode\tNModes\tMin\tMax\tRange\tVariance\tStd Dev\tSEM\t95%L\t95%H\tSkew\tStd Skew\tKurtosis\n";
    }
    if ($gfmt) {
-      printf "%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g", $sum,$N,$Mean,$Median,$Mode,$ModeNum,$Min,$Max,$XRange,$S2,$S,$SEM
+      printf "%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g", $sum,$N,$Mean,$Median,$Mode,$ModeNum,$Min,$Max,$XRange,$S2,$S,$SEM,$ConfIntLow,$ConfIntHi;
    } else {
-      print "$sum\t$N\t$Mean\t$Median\t$Mode\t$ModeNum\t$Min\t$Max\t$XRange\t$S2\t$S\t$SEM";
+      print "$sum\t$N\t$Mean\t$Median\t$Mode\t$ModeNum\t$Min\t$Max\t$XRange\t$S2\t$S\t$SEM\t$ConfIntLow\t$ConfIntHi";
    }
    if ($S > 0 && $N > 3) {
        if ($gfmt) {
@@ -324,44 +329,68 @@ my $LESSHELP = <<HELP;
 
  eg, calculate the file size distribution in the current directory:
 
-   % ls -l | cut -c31-42 |stats --dist=2 --x=20 --y=10
+$ ls -l | scut -f=4 |stats --dist=2 --x=20 --y=10
+Sum       3625346311
+Number    937
+Mean      3869099.58484525
+Median    13689
+Mode      6  
+NModes    63
+Min       0
+Max       1473825813
+Range     1473825813
+Variance  3.35007630598992e+15
+Std_Dev   57879843.6935512
+SEM       1890852.07368451
+95% Conf  -109575394.054515 to 117313593.224206
+Skew      21.3220570205982
+Std_Skew  266.454629755078
+Kurtosis  489.585198856141
 
-   Sum       158401735            158.4 MB total
-   Number    503                  in 503 files
-   Mean      314913.986083499     average size of file is 315 KB
-   Median    10204                median size is 10 KB
-   Mode      1024                 mode is 1024 due to ..
-   NModes    33                   .. 33 directories
-   Min       0                    at least 1 empty file
-   Max       27135470             got a whomper of a file at 2.7 MB
-   Variance  2903105341782.66     huge variance
-   Std_Dev   1703850.15238508     etc
-   SEM       75970.9233614217
-   Skew      12.1873963279124
-   Std_Skew  111.588464543135
-   Kurtosis  235.291925985398
 
+Distribution
+X BinSize 73691290.65
+Y BinSize  103.666666666667
 
-   Distribution
-   X BinSize 0.186431547
-   Y BinSize  18
+YMax:933
+      |*                   
+      |                    
+      |                    
+      |                    
+      |                    
+      |                    
+      |                    
+      |                    
+      |                    
+      | *******************
+      |--------------------
+  X Min               X Max
+   0.00        1473825813.00 
 
-   |    *
-   |
-   |   * *
-   |
-   |
-   |      *
-   |  *
-   |
-   |       *
-   |**      ************
-   +--------------------
+If points are jammed at one end, use '--ln' to spread them.
 
+(the points are jammed so re-plotting with '--ln' results in)
+
+YMax:127
+      |         *          
+      |                    
+      |       *            
+      |        * *         
+      |           *        
+      | *          *       
+      |      *      *      
+      |   **               
+      |* *  *        **    
+      |                ****
+      |--------------------
+  X Min               X Max
+   0.00               21.11 
+
+ 
  Feel free to add whatever additional calculations you want,
  but if you do and you think they might be of general use,
  let me know so I can add them to the original.
- Bug reports, suggestions back to the author (hjm\@tacgi.com)
+ Bug reports, suggestions back to the author (hjmangalam\@gmail.com)
 
 HELP
 
