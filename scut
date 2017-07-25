@@ -15,8 +15,9 @@
 
 
 
-# Version 1.35
+# Version 1.36
 # Changes:
+#   1.36   07-25-17 - minor mods, hints to help file
 #   1.35   03-18-15 - drop a dotfile when there's no statistics module so the messages
 #                     don't repeat.
 #   1.34   01-06-12 - added -f as alias to --c1 and -d as alias to --id1
@@ -83,8 +84,8 @@ $s_count $s_mn $s_sd $s_sem $s_sum $stat $stats $sync @tt $ver $VERSION $WC
 $iR $iC  $oWkS  $oWkC $xlf $oBook $od $oExcel $TMP $file $Yjoint
 $i $nbits @cbits $e $r $nn @ll $cutc1 $cutid1
 );
-$VERSION = "1.35";
-$DATE = "Mar 18, 2015";
+$VERSION = "1.36";
+$DATE = "Jul 25, 2017";
 $stats =0;
 $ver = 0;
 $excl = 0;
@@ -836,9 +837,15 @@ NB: the following 4 options: --begin, --end, --excl --mod_col, --passthru curren
  = scut ignores any line that starts with a '#', so you can document what
  the columns mean, add column numbering, etc, as long as those lines start
  with a '#'
-
- = scut always puts the matched key in the 1st column of the output
-
+ 
+ = if you need to keep the ordering intact for either of the files, run 
+ them thru 'cat -n' to number the lines so they can be re-sorted after 
+ processing (Tx, Theo).
+ 
+ = scut processes both files in-memory and expands to about 10x the size of 
+ both files in-mem.  So, good for data up to the 10s of GB on servers
+ but probably not more.
+ 
  = under Win/DOS execution, you will probably need to run it with the perl
    prefix i.e. perl scut [options] and will also have to enclose the option
    strings with DOUBLE QUOTES (\"opts\") instead of single quotes('opts').
