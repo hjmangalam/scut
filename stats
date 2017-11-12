@@ -83,7 +83,7 @@ if (!$xfhash{$xf}){die "ERROR: I don't support that transform; try again or see 
 if (!defined $Xsize) { $Xsize = 60; }
 if (!defined $Ysize) { $Ysize = 25; }
 if (!defined $id) {$id = "\\s+";}
-if (!defined $od) {$od = "\\t";}
+if (!defined $od) {$od = "\t";}
 
 #Zero the DIST array
 for (my $x=0; $x<$Xsize; $x++) {
@@ -141,9 +141,9 @@ while (<>) {
         if ($gfmt) {
             for ($i=0; $i<$x; $i++){ printf "%g", $arr[$i]; if ($i<$y) {print "$od"}}
         } else {
-            for ($i=0; $i<$x; $i++){ print "$arr[$i]$od"; if ($i<$y) {print "$od"}}
+            for ($i=0; $i<$x; $i++){ print "$arr[$i]"; if ($i<$y) {print "$od"}}
         }
-        {print "\n"}
+        print "\n"
     }   
 }
 
