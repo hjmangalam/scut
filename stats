@@ -1,14 +1,10 @@
 #!/usr/bin/env perl
 # by Harry Mangalam, hjmangalam@gmail.com.com.
 
-# don't forget!!  using git!
-# git add  stats                # stage the file for the commit
-# git commit -m 'commit message'    # stages the commit
-# git push                          # pushes the commit to github
-
 # after significant changes, update the tarballs that need it and cp to moo for distribution; update the scut github
-# cd ~/gits/scut; cp ~/bin/stats .; git add stats; git commit -m 'commit message'; git push
+# export filename="/home/hjm/bin/stats"; scp ${filename} moo:~/public_html; scp ${filename} moo:~/bin;  scp ${filename}   dabrick:~/bin; ssh moo 'scp bin/stats hmangala@hpcs:~/bin'
 
+# cd ~/gits/scut; cp ~/bin/stats .; git add stats; git commit -m 'commit message'; git push
 
 use strict;
 use Getopt::Long;
@@ -20,8 +16,8 @@ use vars qw( $wide $dist $Xsize $Ysize $ln $N $sum $Min $Max $XYDist @Data $page
     $gfmt $VERSION $DATE $HELPFILE $HELP $ConfIntLow $ConfIntHi $QUIET $stdout 
     %xfhash $xf $id $od
 );
-$VERSION = "2.0.1";
-$DATE = "Nov 11, 2017";
+$VERSION = "2.0.3";
+$DATE = "Nov 12, 2017";
 if (!defined $ENV{'PAGER'}) {$pager = "less";};
 $gfmt = 0;
 $NWH = 0;
@@ -71,9 +67,11 @@ $Min = $Max = 0;
 
 # handle input and offer help if none.
 if (-t STDIN) {
-    print "\n$0 will emit descriptive statistics based on 
+    if ($HELP) {usage()}
+    else {
+        print "\n$0 will emit descriptive statistics based on 
 all number-like input fed it on STDIN.  Use '-h' for more help.\n"; 
-    if ($HELP) {usage()};
+    }
     exit 0;
 }
 
