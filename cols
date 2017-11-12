@@ -1,4 +1,4 @@
-#!/usr/bin/perl
+#!/usr/bin/env perl
 
 use Getopt::Long;
 #if ( @ARGV == 0 ) { die "\nNo data - check the help (cols --help)\n\n";}
@@ -20,9 +20,11 @@ if ($delim eq "ws")    { $delim = "\\s+"} # ws = whitespace
 if (!defined $skip)    { $skip = 0;}
 if (defined $skip) {$lines += $skip;}
 
-if (defined $help) {
+if (-t STDIN) {
+    print "\n$0 aligns and numbers input fields so they can be inspected
+    By default, only prints 10 lines.  Use '-h' for more help.\n"; 
+    if (defined $help) {
     print << "HELP";
-
 cols is a small Perl-based utility to view columns of data to help
 programmers check that the columns correspond to what they want.
 It strips tabs from the input and pads columns with spaces so it's
@@ -56,9 +58,13 @@ example:
           cols --mw=11 --ch=1 <huge.data |less -S
 
 HELP
+    }
+    exit (0);
+}    
 
-exit (0);
-}
+
+
+
 #--skip=# Number of lines to skip before starting to split the fields.
 
 $Nrows = 0;
