@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 # scut v1.30 and above is released under the GNU General Public License v 3.0.
 # That license can be found at: <http://www.gnu.org/licenses/gpl.html>
 # I'd appreciate a note if you find it useful or find/fix a bug, or can
@@ -11,7 +11,7 @@
 
 # kick it to moo, dabrick, 
 # export filename="/home/hjm/bin/scut"; scp ${filename} moo:~/public_html; scp ${filename} moo:~/bin;  
-# scp ${filename}   dabrick:~/bin; scp ${filename} hmangala@hpcs:~/bin
+# scp ${filename}   dabrick:~/bin; ssh moo 'scp bin/scut hmangala@hpcs:~/bin'
 # cd ~/gits/scut; cp ~/bin/scut .; git add scut; git commit -m 'commit message'; git push
 
 
@@ -86,8 +86,8 @@ $s_count $s_mn $s_sd $s_sem $s_sum $stat $stats $sync @tt $ver $VERSION $WC
 $iR $iC  $oWkS  $oWkC $xlf $oBook $od $oExcel $TMP $file $Yjoint
 $i $nbits @cbits $e $r $nn @ll $cutc1 $cutid1
 );
-$VERSION = "1.37";
-$DATE = "Nov 11, 2017";
+$VERSION = "1.38";
+$DATE = "Dec 8, 2017";
 $stats =0;
 $ver = 0;
 $excl = 0;
@@ -100,6 +100,7 @@ $labels = 0; # no col labels is the default
 $f1 = "STDERR";
 #$c1 = '';
 #$c2 = '';
+my $argvnmbr = $#ARGV;
 
 # hash to convert alphabetic columns to 0-based indices up to 77 cols.  You can design your own
 # algo to do this correctly if you feel offended by this cheesy hack
@@ -155,15 +156,14 @@ if ($ver) {
    print "scut: Version $VERSION ($DATE) - author: Harry Mangalam (hjm\@tacgi.com)\n";
    exit 0;
 }
-
-if (-t STDIN) {
-    print "\n$0 acts like a super-'cut' and can do joins between 
+if (-t STDIN &&  $argvnmbr < 1) {
+    if ($help) {usage()}
+    else {
+        print "\n$0 acts like a super-'cut' and can do joins between 
 files using common columns.  Use '-h' for more help.\n"; 
-    if ($help) {usage()};
+    }
     exit 0;
 }
-
-if ($help) {usage();}
 
 # delimiters
 if ($csv ne '') {$id1 = $csv;}
