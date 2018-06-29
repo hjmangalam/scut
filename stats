@@ -16,8 +16,8 @@ use vars qw( $wide $dist $Xsize $Ysize $ln $N $sum $Min $Max $XYDist @Data $page
     $gfmt $VERSION $DATE $HELPFILE $HELP $ConfIntLow $ConfIntHi $QUIET $stdout 
     %xfhash $xf $id $od
 );
-$VERSION = "2.0.3";
-$DATE = "Nov 12, 2017";
+$VERSION = "2.0.6";
+$DATE = "May 13, 2018";
 if (!defined $ENV{'PAGER'}) {$pager = "less";};
 $gfmt = 0;
 $NWH = 0;
@@ -26,7 +26,7 @@ $stdout = 0;
   'log10'  => 1,  'ln'     => 1,  'sqrt'   => 1,  'x^2'    => 1,  'x^3'    => 1,
   '1/x'    => 1,  'sin'    => 1,  'cos'    => 1,  'tan'    => 1,  'asin'   => 1,
   'acos'   => 1,  'atan'   => 1,  'round'  => 1,  'trunc'  => 1,  'frac'   => 1,
-  'abs'    => 1,  'exp'    => 1,  ""       => 1
+  'abs'    => 1,  'exp'    => 1,  'pass'   => 1,  ''       => 1
   );  
 
 &GetOptions(
@@ -39,12 +39,13 @@ $stdout = 0;
    "quiet!"  => \$QUIET, # shhhhh!
    "nwh!"    => \$NWH,   # No Wide Headers (if repeating wide mode, don't want headers)
    "stdout!" => \$stdout,   # just print, don't do stats on the numbers
-   "xf=s"    => \$xf,    # take the ln() of the #s before doing anything.
-   "gfmt!"   => \$gfmt,   # set to Perl's 'general' numeric notation
-   "id=s"   =>  \$id,   # input delimiter
-   "od=s"   =>  \$od,   # output delimiter
+   "xf=s"    => \$xf,    # do a transform of the #s before doing anything.
+   "gfmt!"   => \$gfmt,  # set to Perl's 'general' numeric notation
+   "id=s"   =>  \$id,    # input delimiter
+   "od=s"   =>  \$od,    # output delimiter
 );
 
+# 11.28.2017 added xf=pass for simple text/data filtering.
 # 11.10.2017 added transforms (--xf) & --stdout so stats can be used as an inline transform
 # 06.15.2017  added 95% confidence intervals
 # 03.12.2014 added '--quiet' to silence non-fatal warnings.
@@ -69,7 +70,7 @@ $Min = $Max = 0;
 if (-t STDIN) {
     if ($HELP) {usage()}
     else {
-        print "\n$0 will emit descriptive statistics based on 
+        print "\n[$0] will emit descriptive statistics based on 
 all number-like input fed it on STDIN.  Use '-h' for more help.\n"; 
     }
     exit 0;
@@ -78,6 +79,7 @@ all number-like input fed it on STDIN.  Use '-h' for more help.\n";
 # define undefined vars
 
 if (!$xfhash{$xf}){die "ERROR: I don't support that transform; try again or see the help (-h)\n"; }
+#print "xf = $xf\n";
 if (!defined $Xsize) { $Xsize = 60; }
 if (!defined $Ysize) { $Ysize = 25; }
 if (!defined $id) {$id = "\\s+";}
@@ -95,55 +97,74 @@ while (<>) {
 	$_ = trim($_);
 	my $x = my @arr = split /$id/;
 	for (my $i = 0; $i < $x; $i++) {
-    # make sure all the things we're including are number-like
-    # remove commas to prevent rejection downstream
-    $arr[$i] =~ s/,//g;
-   	if (($arr[$i] =~ /\d+|\d*\.\d*|\d+\.\d*[eE]-?\d+/) &&
-      	 ($arr[$i] !~ /[a-df-zA-DF-Z]+/) ) {
-        if (defined $xf) { # want to exec a transform; already checked that its supported.
-            # some of these are direct maps to perl-supplied functions; others have to be munged.
-            my $v = $arr[$i];
-            if    ($xf = "log10") { if ($v > 0) { $arr[$i] = log($v) / log(10);} else { $arr[$i] = "NA";} }
-            elsif ($xf = "ln")    { if ($v > 0) { $arr[$i] = log($v);}           else { $arr[$i] = "NA";} }
-            elsif ($xf = "sqrt")  { if ($v >= 0) { $arr[$i] = sqrt($v);}         else { $arr[$i] = "NA";} }
-            elsif ($xf = "x^2")   { $arr[$i] *= ($v)}
-            elsif ($xf = "x^3")   { $arr[$i] = ($v)*($v)*($v)}
-            elsif ($xf = "1/x")   { $arr[$i] = 1 / $v }
-            elsif ($xf = "sin")   { $arr[$i] = sin($v) }
-            elsif ($xf = "cos")   { $arr[$i] = cos($v) }
-            elsif ($xf = "tan")   { $arr[$i] = sin($v) / cos($v) }
-            elsif ($xf = "asin")  { $arr[$i] = 1 / sin($v) }
-            elsif ($xf = "acos")  { $arr[$i] = 1 / cos($v) }
-            elsif ($xf = "atan")  { $arr[$i] = 1 / tan($v) }
-            elsif ($xf = "round") { $arr[$i] = int ($v + 0.5) }
-            elsif ($xf = "trunc") { $arr[$i] = int ($v) }
-            elsif ($xf = "frac")  { $arr[$i] = $v - int($v) }
-            elsif ($xf = "abs")   { $arr[$i] = abs($v) }
-            elsif  ($xf = "exp")   { $arr[$i] = exp($v) }
+        # make sure all the things we're including are number-like
+        # remove commas to prevent rejection downstream
+        $arr[$i] =~ s/,//g;
+        if (($arr[$i] =~ /\d+|\d*\.\d*|\d+\.\d*[eE]-?\d+/) &&
+            ($arr[$i] !~ /[a-df-zA-DF-Z]+/) ) {
+#            print "[$i] = $arr[$i]\n";
+            if (defined $xf) { # want to exec a transform; already checked that its supported.
+                # some of these are direct maps to perl-supplied functions; others have to be munged.
+                
+                my $v = $arr[$i];
+                if    ($xf eq "pass")  { $arr[$i] = $v} # simply a filtering and passthru.
+                elsif ($xf eq "log10") { if ($v > 0) { $arr[$i] = log($v) / log(10);} else { $arr[$i] = "NA";} }
+                elsif ($xf eq "ln")    { if ($v > 0) { $arr[$i] = log($v);}           else { $arr[$i] = "NA";} }
+                elsif ($xf eq "sqrt")  { if ($v >= 0) { $arr[$i] = sqrt($v);}         else { $arr[$i] = "NA";} }
+                elsif ($xf eq "x^2")   { $arr[$i] *= ($v)}
+                elsif ($xf eq "x^3")   { $arr[$i] = ($v)*($v)*($v)}
+                elsif ($xf eq "1/x")   { $arr[$i] = 1 / $v }
+                elsif ($xf eq "sin")   { $arr[$i] = sin($v) }
+                elsif ($xf eq "cos")   { $arr[$i] = cos($v) }
+                elsif ($xf eq "tan")   { $arr[$i] = sin($v) / cos($v) }
+                elsif ($xf eq "asin")  { $arr[$i] = 1 / sin($v) }
+                elsif ($xf eq "acos")  { $arr[$i] = 1 / cos($v) }
+                elsif ($xf eq "atan")  { $arr[$i] = 1 / tan($v) }
+                elsif ($xf eq "round") { $arr[$i] = int ($v + 0.5) }
+                elsif ($xf eq "trunc") { $arr[$i] = int ($v) }
+                elsif ($xf eq "frac")  { $arr[$i] = $v - int($v) }
+                elsif ($xf eq "abs")   { $arr[$i] = abs($v) }
+                elsif ($xf eq "exp")   { $arr[$i] = exp($v) }
+            }
+        if ($stdout) {
+            my $y = $x-1;
+            if ($gfmt) { printf "%g", $arr[$i]; if ($i<$y) {print "$od"} else {print "\n";} }
+            else       { print "$arr[$i]";      if ($i<$y) {print "$od"} else {print "\n";} }
         }
-        if ($ln) {
-          if ($arr[$i] > 0) { $arr[$i] = log($arr[$i]); }
-          elsif (! $QUIET) { print STDERR "Detected # <= 0 ($arr[$i] @ ~ line $N)- Maybe shouldn't use that transform!!\n"}
-       }
-	  	 $sum += $arr[$i]; # sum the numbers as they come in
-       if ($N == 0) {
-          $Min = $Max = $arr[$i];
-       }
-       if ($arr[$i] < $Min) { $Min = $arr[$i]; }
-       if ($arr[$i] > $Max) { $Max = $arr[$i]; }
-       $Data[$N++] = $arr[$i];  # store them for calcing the SD, etc
-      }
-   }
-    if ($stdout) {
-        my $i; my $y = $x-1;
-        if ($gfmt) {
-            for ($i=0; $i<$x; $i++){ printf "%g", $arr[$i]; if ($i<$y) {print "$od"}}
-        } else {
-            for ($i=0; $i<$x; $i++){ print "$arr[$i]"; if ($i<$y) {print "$od"}}
+#        print "\n";
+            
+    #         if ($ln) {
+    #           if ($arr[$i] > 0) { $arr[$i] = log($arr[$i]); }
+    #           elsif (! $QUIET) { print STDERR "Detected # <= 0 ($arr[$i] @ ~ line $N)- Maybe shouldn't use that transform!!\n"}
+    #        }
+            $sum += $arr[$i]; # sum the numbers as they come in
+        if ($N == 0) {
+            $Min = $Max = $arr[$i];
         }
-        print "\n"
-    }   
-}
+        if ($arr[$i] < $Min) { $Min = $arr[$i]; }
+        if ($arr[$i] > $Max) { $Max = $arr[$i]; }
+        $Data[$N++] = $arr[$i];  # store them for calcing the SD, etc
+        }
+#         if ($stdout) {
+#             my $y = $x-1;
+#             if ($gfmt) { printf "%g", $arr[$i]; if ($i<$y) {print "$od"}}
+#             else       { print "$arr[$i]"; if ($i<$y) {print "$od"}}
+#         }
+#         print "\n"
+    }
+}   
+
+   
+#     if ($stdout) {
+#         my $i; my $y = $x-1;
+#         if ($gfmt) {
+#             for ($i=0; $i<$x; $i++){ printf "%g", $arr[$i]; if ($i<$y) {print "$od"}}
+#         } else {
+#             for ($i=0; $i<$x; $i++){ print "$arr[$i]"; if ($i<$y) {print "$od"}}
+#         }
+#         print "\n"
+#     }   
+
 
 if (! $stdout) {
     # All the numbers sucked in; now calc the values wanted
@@ -305,7 +326,7 @@ if (! $stdout) {
 
     if ($wide) {
     if (!$NWH){
-        print  "#Sum\tN\tMean\tMedian\tMode\tNModes\tMin\tMax\tRange\tVariance\tStd Dev\tSEM\t95%L\t95%H\tSkew\tStd Skew\tKurtosis\n";
+        print  "#Sum\tN\tMean\tMedian\tMode\tNModes\tMin\tMax\tRange\tVariance\tStd_Dev\tSEM\t95%L\t95%H\tSkew\tStd_Skew\tKurtosis\n";
     }
     if ($gfmt) {
         printf "%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g\t%g", $sum,$N,$Mean,$Median,$Mode,$ModeNum,$Min,$Max,$XRange,$S2,$S,$SEM,$ConfIntLow,$ConfIntHi;
@@ -399,8 +420,8 @@ my $LESSHELP = <<HELP;
                         good for repeating output as for logging stuff)
        --xf="fn" ..... to transform STDIN before doing the stats, where
                          "fn" is one of log10, ln, sqrt, x^2, x^3, 1/x, 
-                       sin, cos, tan, asin, acos, atan, round, abs, exp 
-                             trunc (integer part), frac (decimal part). 
+                       sin, cos, tan, asin, acos, atan, round, abs, exp, 
+                 pass(thru), trunc (integer part), frac (decimal part). 
        --stdout ....... JUST print STDIN to STDOUT (don't do any stats)
                                           (--xf also applies to STDOUT)
        --id="token" .... Input delimiter; defaults to whitespace (\\s+)
@@ -412,7 +433,7 @@ Example 1:
 =======================================================================
 Calculate the file size distribution in the current directory:
 
-\$ ls -l | awk '{print $5}'  | stats2  --gfmt --dist=2 --x=20 --y=10
+\$ ls -l | awk '{print \$5}'  | stats2  --gfmt --dist=2 --x=20 --y=10
 Sum       5.72512e+08
 Number    172
 Mean      3.32856e+06
@@ -473,7 +494,7 @@ Calculate the file size distribution in the current directory with the
 suggested ln transform.  
 NB: Note that the stats are calculated with the transformed data.
 
-\$ ls -l | awk '{print $5}'  | stats2 --xf='ln' --gfmt --dist=2 --x=20 --y=10
+\$ ls -l | awk '{print \$5}'  | stats2 --xf='ln' --gfmt --dist=2 --x=20 --y=10
 Sum       1597.38
 Number    172
 Mean      9.28707
