@@ -18,6 +18,7 @@
 
 # Version 1.36
 # Changes:
+#   1.38   04-27-19 - fixed broken Excel numbering so it now works. "a e b e f" -> "0 4 1 4 5"
 #   1.37   11-11-17 - detect no piped input on STDIN and emit an identifying line.
 #   1.36   07-25-17 - minor mods, hints to help file
 #   1.35   03-18-15 - drop a dotfile when there's no statistics module so the messages
@@ -78,7 +79,7 @@ use Env qw(PATH HOME);
 
 use vars qw(
 $begin $begin_flag $c1 %C1 @c1i $c2 @c2i $csv $DATE $debug $end $end_flag
-$err %excel_ids $excl $f1 $f2 $fnc $help $HELPFILE $id1 $id2 $incl $k1 $k2 $labels
+$err $excl $f1 $f2 $fnc $help $HELPFILE $id1 $id2 $incl $k1 $k2 $labels
 @Lbls
 @L @L $lastline $LESSHELP $line_counter $L_od @Ls $mc_ba $mc_nbr $mc_OK $mc_txt
 $mod_col $Nc1i $Nc2i $newcols $nocase  $passthru $process $r $neg $pos
@@ -104,15 +105,6 @@ my $argvnmbr = $#ARGV;
 
 # hash to convert alphabetic columns to 0-based indices up to 77 cols.  You can design your own
 # algo to do this correctly if you feel offended by this cheesy hack
-%excel_ids = ('A' => 0,
-'B' =>   1,'C'  =>  2,'D'  =>  3,'E'  =>  4,'F'  =>  5,'G'  =>  6,'H'  =>  7,'I'  =>  8,'J'  =>  9,'K'  => 10,
-'L' =>  11,'M'  => 12,'N'  => 13,'O'  => 14,'P'  => 15,'Q'  => 16,'R'  => 17,'S'  => 18,'T'  => 19,'U'  => 20,
-'V' =>  21,'W'  => 22,'X'  => 23,'Y'  => 24,'Z'  => 25,'AA' => 26,'AB' => 27,'AC' => 28,'AD' => 29,'AE' => 30,
-'AF' => 31,'AG' => 32,'AH' => 33,'AI' => 34,'AJ' => 35,'AK' => 36,'AL' => 37,'AM' => 38,'AN' => 39,'AO' => 40,
-'AP' => 41,'AQ' => 42,'AR' => 43,'AS' => 44,'AT' => 45,'AU' => 46,'AV' => 47,'AW' => 48,'AX' => 49,'AY' => 50,
-'AZ' => 51,'BA' => 52,'BB' => 53,'BC' => 54,'BD' => 55,'BE' => 56,'BF' => 57,'BG' => 58,'BH' => 59,'BI' => 60,
-'BJ' => 61,'BK' => 62,'BL' => 63,'BM' => 64,'BN' => 65,'BO' => 66,'BP' => 67,'BQ' => 68,'BR' => 69,'BS' => 70,
-'BT' => 71,'BU' => 72,'BV' => 73,'BW' => 74,'BX' => 75,'BY' => 76,'BZ' => 77);
 
 &GetOptions("f=s"       => \$c1,   # cols to print from f1 (alias to --c1 for 'cut'-like behavior
 	    "d=s"       => \$id1,  # input delimiter for stdin or file1
@@ -233,6 +225,13 @@ if ($begin_flag eq "numeric" && $end_flag eq "numeric" && ($end <= $begin)) {
 if ($excl == 0) {$incl = 1;} # inverts the --incl/exclude flag to be more intuitive..? w/o changing code
 else            {$incl = 0;}
 
+if (defined $c1 &&  $c1 !~ /-/  && $c1 !~ /ALL/i && $c1 =~ /[a-zA-Z]/ ) { # this has to change
+    $c1 = alphas_to_ints($c1);
+}; chop $c1;
+
+if (defined $c2 &&  $c2 !~ /-/  && $c2 !~ /ALL/i && $c2 =~ /[a-zA-Z]/ ) { # this has to change
+    $c2 = alphas_to_ints($c2);
+}; chop $c2;
 
 #process the c1/c2 numbers into an array for manipulation
 if (defined $c1) {
@@ -247,33 +246,7 @@ if (defined $c2) {
     $Nc2i = @c2i = column_ranges($c2);
 } else {$c2 = "NONE"; $Nc2i = 0; @c2i = 0;};
 
-# convert excel IDs to 0-based col numbers.
-# (better way to detect the excel-formatted numbers?)
-if ( $c1 !~ /-/  && $c1 !~ /ALL/i && $c1 =~ /[a-zA-Z]/ ) { # this has to change
-	for (my $i=0; $i<$Nc1i; $i++) {
-		if (defined $c1i[$i] && $c1i[$i] =~ /\D/ ) { # matches a non-digit, convert to a digit
-			$c1i[$i] =~ tr/a-z/A-Z/;
-			if (length($c1i[$i]) > 2) { # something's wrong - hash doesn't support keys > 2
-				die "the column specifier in --c1 ($c1i[$i]) is too long\n";
-			} else {
-				$c1i[$i] = $excel_ids{$c1i[$i]}; # replace inline
-			}
-		}
-	}
-}
 
-if (defined $c2 && $c2 !~ /ALL/i) {
-	for ($i=0; $i<$Nc2i; $i++) {
-		if ($c2i[$i] =~ /\D/ ) { # matches a non-digit, convert to a digit
-			$c2i[$i] =~ tr/a-z/A-Z/;
-			if (length($c2i[$i]) > 2) { # something's wrong - hash doesn't support keys > 2
-				die "the column specifier in --c2 ($c2i[$i]) is too long\n";
-			} else {
-				$c2i[$i] = $excel_ids{$c2i[$i]}; # replace inline
-			}
-		}
-	}
-}
 #if ($debug) {pause(__LINE__);}
 if (defined $mod_col) {
 	my $Nmc = my @Lmc = split /,/, $mod_col;
@@ -542,6 +515,37 @@ if ($debug) {pause(__LINE__);}
 }
 
 # --------------------------- SUBROUTINES -------------------------------- #
+
+sub alphas_to_ints ($) {
+    # changes an input string of "a l p h aB e t i c c h A R S" to ints, according to the hash
+    # going to continue to use 'c1' and derivative since that's what it started out as
+    my $c1 = shift;
+    my %excel_ids = ('A' => 0,
+    'B' =>   1,'C'  =>  2,'D'  =>  3,'E'  =>  4,'F'  =>  5,'G'  =>  6,'H'  =>  7,'I'  =>  8,'J'  =>  9,'K'  => 10,
+    'L' =>  11,'M'  => 12,'N'  => 13,'O'  => 14,'P'  => 15,'Q'  => 16,'R'  => 17,'S'  => 18,'T'  => 19,'U'  => 20,
+    'V' =>  21,'W'  => 22,'X'  => 23,'Y'  => 24,'Z'  => 25,'AA' => 26,'AB' => 27,'AC' => 28,'AD' => 29,'AE' => 30,
+    'AF' => 31,'AG' => 32,'AH' => 33,'AI' => 34,'AJ' => 35,'AK' => 36,'AL' => 37,'AM' => 38,'AN' => 39,'AO' => 40,
+    'AP' => 41,'AQ' => 42,'AR' => 43,'AS' => 44,'AT' => 45,'AU' => 46,'AV' => 47,'AW' => 48,'AX' => 49,'AY' => 50,
+    'AZ' => 51,'BA' => 52,'BB' => 53,'BC' => 54,'BD' => 55,'BE' => 56,'BF' => 57,'BG' => 58,'BH' => 59,'BI' => 60,
+    'BJ' => 61,'BK' => 62,'BL' => 63,'BM' => 64,'BN' => 65,'BO' => 66,'BP' => 67,'BQ' => 68,'BR' => 69,'BS' => 70,
+    'BT' => 71,'BU' => 72,'BV' => 73,'BW' => 74,'BX' => 75,'BY' => 76,'BZ' => 77);
+    $c1 =~ tr/a-z/A-Z/;
+    my $Nc1a = my @Ac1a = split(/\s+/, $c1);
+    $c1 = "";  # reset c1
+	for (my $i=0; $i<$Nc1a; $i++) {
+		if ($Ac1a[$i] =~ /\D/ ) { # matches a non-digit, convert to a digit
+            #print " [ $Ac1a[$i] ]\n";
+			if (length($Ac1a[$i]) > 2) { # something's wrong - hash doesn't support keys > 2
+				die "the column specifier in --c1 ($c1i[$i]) is too long\n";
+			} else {
+				$c1i[$i] = $excel_ids{$Ac1a[$i]}; # replace inline
+				#print " [ $c1i[$i] ]\n";
+				$c1 .= $c1i[$i] . " "; 
+			}
+		}
+	}
+	return $c1; # now converted to ints
+ }   
 
 sub trim($) {
     my $string = shift;
