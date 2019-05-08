@@ -16,7 +16,7 @@
 
 
 
-# Version 1.36
+# Version 1.38
 # Changes:
 #   1.38   04-27-19 - fixed broken Excel numbering so it now works. "a e b e f" -> "0 4 1 4 5"
 #   1.37   11-11-17 - detect no piped input on STDIN and emit an identifying line.
@@ -157,6 +157,8 @@ files using common columns.  Use '-h' for more help.\n";
     exit 0;
 }
 
+#print "argv = [@ARGV]\n";
+
 # delimiters
 if ($csv ne '') {$id1 = $csv;}
 if (!defined $id1) { $id1 = '\s+';} # if it's not defined, set to whitespace
@@ -225,13 +227,15 @@ if ($begin_flag eq "numeric" && $end_flag eq "numeric" && ($end <= $begin)) {
 if ($excl == 0) {$incl = 1;} # inverts the --incl/exclude flag to be more intuitive..? w/o changing code
 else            {$incl = 0;}
 
+#print "c1a = [$c1]\n"; 
 if (defined $c1 &&  $c1 !~ /-/  && $c1 !~ /ALL/i && $c1 =~ /[a-zA-Z]/ ) { # this has to change
     $c1 = alphas_to_ints($c1);
-}; chop $c1;
+}; # chop $c1;
+#print "c1b = [$c1]\n"; #exit 1;
 
 if (defined $c2 &&  $c2 !~ /-/  && $c2 !~ /ALL/i && $c2 =~ /[a-zA-Z]/ ) { # this has to change
     $c2 = alphas_to_ints($c2);
-}; chop $c2;
+}; # chop $c2;
 
 #process the c1/c2 numbers into an array for manipulation
 if (defined $c1) {
@@ -239,6 +243,8 @@ if (defined $c1) {
     if (($c1 =~ /-/) && ($c1 !~ /ALL/i )) {$c1 = "ALL " . $c1;}
      $Nc1i = @c1i = column_ranges($c1,$debug); # send it the string, get back an int array
 } else {$c1 = "NONE"; $Nc1i = 0; @c1i = 0;}
+
+#print "c1c = [$c1]\n"; #exit 1;
 
 # column ranges still don't work for 2nd file.\
 if (defined $c2) {
@@ -680,7 +686,7 @@ sub column_ranges {
         return @cols_neg;
     } elsif ($ics =~ /\d/ && $ics !~ /-/) {
 		@final = split(/\s+/, $ics);return @final;} #  should be only #s like '2 5 3 7 6'
-    else {die "There's something wrong with the column specification [$ics]\n";}
+    else {exit 1;}; # die "There's something wrong with the column specification [$ics]\n";}
 }
 
 sub pause {
