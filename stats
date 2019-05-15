@@ -16,8 +16,8 @@ use vars qw( $wide $dist $Xsize $Ysize $ln $N $sum $Min $Max $XYDist @Data $page
     $gfmt $VERSION $DATE $HELPFILE $HELP $ConfIntLow $ConfIntHi $QUIET $stdout 
     %xfhash $xf $id $od
 );
-$VERSION = "2.0.6";
-$DATE = "May 13, 2018";
+$VERSION = "2.0.7";
+$DATE = "May 15, 2019";
 if (!defined $ENV{'PAGER'}) {$pager = "less";};
 $gfmt = 0;
 $NWH = 0;
@@ -391,7 +391,7 @@ my $LESSHELP = <<HELP;
  stats version: $VERSION, last mod: $DATE
 
  stats is a utility that reads STDIN for all #s, whether in one line
- or in many (removes commas, checks for text contaminents; only have to 
+ or in many (removes commas, checks for text contaminants; only have to 
  be separated by whitespace), calculates some basic stats, then spits 
  them to STDOUT to be grep'ed in the std unixy way.
  
@@ -433,7 +433,7 @@ Example 1:
 =======================================================================
 Calculate the file size distribution in the current directory:
 
-\$ ls -l | awk '{print \$5}'  | stats2  --gfmt --dist=2 --x=20 --y=10
+\$ ls -l | awk '{print \$5}'  | stats  --gfmt --dist=2 --x=20 --y=10
 Sum       5.72512e+08
 Number    172
 Mean      3.32856e+06
@@ -494,7 +494,7 @@ Calculate the file size distribution in the current directory with the
 suggested ln transform.  
 NB: Note that the stats are calculated with the transformed data.
 
-\$ ls -l | awk '{print \$5}'  | stats2 --xf='ln' --gfmt --dist=2 --x=20 --y=10
+\$ ls -l | awk '{print \$5}'  | stats --xf='ln' --gfmt --dist=2 --x=20 --y=10
 Sum       1597.38
 Number    172
 Mean      9.28707
@@ -537,8 +537,8 @@ YMax:24
 
 
  = Hint: while the above plotting function is better than nothing, 
- consider using 'feedgnuplot' to plot columns of numbers. 
- ex:  scut/cut [options] | feedgnuplot --lines --points --domain
+ consider using the excellent 'feedgnuplot' to plot columns of numbers. 
+ ex:  scut/cut [options] | feedgnuplot --lines --points 
 
    
  Feel free to add whatever additional calculations you want,
