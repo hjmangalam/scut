@@ -20,8 +20,8 @@ use vars qw( $wide $dist $Xsize $Ysize $ln $N $sum $Min $Max $XYDist @Data $page
     $ONLY $pSUM $pNUM $pMEAN $pMEDIAN $pMODE $pNMODES $pMIN $pMAX $pRANGE $pVAR
     $pSD $pSEM $p95C $pSKEW $pSTDSKEW $pKURTOSIS @pr %OUT $MINLIMIT $MAXLIMIT $CAPTURE
 );
-$VERSION = "2.0.8";
-$DATE = "Feb 26, 2020";
+$VERSION = "2.0.9";
+$DATE = "May 2, 2020";
 $ONLY = 0;
 if (!defined $ENV{'PAGER'}) {$pager = "less";};
 $gfmt = 1;
@@ -157,7 +157,7 @@ while (<>) {
         # stolen from https://docstore.mik.ua/orelly/perl4/cook/ch02_02.htm, 2.1.3
         if ($arr[$i] =~/^([+-]?)(?=\d|\.\d)\d*(\.\d*)?([Ee]([+-]?\d+))?$/) { 
             if ($arr[$i] > $MINLIMIT && $arr[$i] < $MAXLIMIT) {
-                $Data[$N++] = $arr[$i];  # store them for calcing the SD, etc
+                #$Data[$N++] = $arr[$i];  # store them for calcing the SD, etc
                 if (defined $xf) { # want to exec a transform; already checked that its supported.
                 # some of these are direct maps to perl-supplied functions; others have to be munged.
                     my $v = $arr[$i];
