@@ -1,7 +1,7 @@
 # scut, cols, and stats
 
 by Harry Mangalam <harry.mangalam@uci.edu> 
-Nov 11, 2017
+updated Oct 21, 2020
 
 ## Summary
 
@@ -25,15 +25,19 @@ developed with and often used with scut.  It is similar to column/columns.
 Both 'scut' and 'cols' are documented in the included 
 [scut_cols_HOWTO.html](http://moo.nac.uci.edu/~hjm/scut_cols_HOWTO.html)
 
-'stats' is a utility to consume all numeric-like data fed to it via STDIN
+'stats' is a nther Perl utility to consume all numeric-like data fed to it via STDIN
 and emit some useful descriptive statistics. 'stats -h' will give you all 
 the help you need.
-Recently (Nov 11, 2017), it has gained the ability to stream-transform numeric
-input and apply stats on those transformed data or print it to STDOUT (without
-the stats calculation.  
+It also has the ability to stream-transform numeric
+input and apply stats on those transformed data or print it to STDOUT without
+the stats calculation.   
 
 Those transforms are:  log10, ln, sqrt, x^2, x^3, 1/x, sin, cos, tan, asin,
 acos, atan, round, abs, exp, trunc (integer part), frac (decimal part)
+
+It can also emit only the value you're interested in.  So if you  only want
+the 'Median', if you pipe some stream of numbers | 'stats --medium', it will
+provide an unadorned single value of the median.  
 
 eg, calculate the file size distribution in the current directory:
 
