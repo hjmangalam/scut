@@ -2,7 +2,7 @@
 # by Harry Mangalam, hjmangalam@gmail.com.com.
 
 # after significant changes, update the tarballs that need it and cp to moo for distribution; update the scut github
-# export filename="/home/hjm/bin/stats"; scp ${filename} moo:~/public_html; scp ${filename} moo:~/bin;  scp ${filename}   dabrick:~/bin; ssh moo 'scp bin/stats hmangala@hpcs:~/bin'
+# export filename="/home/hjm/bin/stats"; scp ${filename} moo:~/public_html; scp ${filename} moo:~/bin;  scp ${filename} bridgit:~/bin; ssh bridgit 'scp ~/bin/stats hmangala@hpc12:~/bin'
 
 # cd ~/gits/scut; cp ~/bin/stats .; git add stats; git commit -m 'commit message'; git push
 # TODO add QQ plot to test for normality?
@@ -21,8 +21,8 @@ use vars qw( $wide $dist $Xsize $Ysize $ln $N $sum $Min $Max $XYDist @Data $page
     $pConfindex
 );
     
-$VERSION = "2.1.1 LonelyXmas";
-$DATE = "Dec 23, 2020";
+$VERSION = "2.1.2 Waiting for NoSco";
+$DATE = "June 2, 2021";
 $ONLY = 0;
 if (!defined $ENV{'PAGER'}) {$pager = "less";};
 $gfmt = 1;
@@ -33,6 +33,8 @@ $pQindex = 100000; # outside possible range.
 $MINLIMIT = -1e32;
 $MAXLIMIT = 1e32;
 $CAPTURE = 0;
+$dist=0; # no plot is default
+
 %xfhash = (
   'log10'  => 1,  'ln'     => 1,  'sqrt'   => 1,  'x^2'    => 1,  'x^3'    => 1,
   '1/x'    => 1,  'sin'    => 1,  'cos'    => 1,  'tan'    => 1,  'asin'   => 1,
@@ -79,7 +81,7 @@ $CAPTURE = 0;
 #   "conf!"    => \$pCONF,    #
    "skew!"    => \$pSKEW,    #
    "stdskew!" => \$pSTDSKEW,    #
-   "kurt!"    => \$pKURTOSIS,    #
+   "kurt!"    => \$pKURTOSIS,    # https://brownmath.com/stat/shape.htm#KurtosisCompute
    "popkurt"  => \$pPopKURTOSIS, #
    "qq!"      => \$pQUANTILE,   # quantile
    );
@@ -120,6 +122,8 @@ if ($CAPTURE) {open (CAP, "> ./stats.exceptions") or die "Can't open filter file
 if ($raw) {$gfmt = 0;} # set to perl native format
 
 #  perltidy cmd to format uniformly: perltidy -ce -i=2 -l=100 stats 
+
+# 06.02.2021 fixed bug that disabled correct (single) outputs if all input numbers were the same 
 # 11.16.2020 added variable quantiles, variable confidence intervals.
 # 10.26.2020 added quantiles, variable printing.
 # 11.28.2017 added xf=pass for simple text/data filtering.
@@ -314,7 +318,7 @@ if (! $stdout) {
             $QUANTSTR .= "$q\t$cutindex\t$cutvalue\n";
         }
     }
-    if ($XMul > 0) {
+    
         if ($MaxSoFarValCnt > 1) {
             $ModeNum = $MaxSoFarValCnt + 1;
             $Mode = $SData[$ModeInd];
@@ -337,9 +341,6 @@ if (! $stdout) {
         ## Check this formula (this looks like it's normalized to 0; should be 3
         ## and also add the population-normalized Kurtosis  Or not..?  Kurtosis is 
         ## a pretty useless measure.
-        $OUT{"Kurtosis"} = $Kurtosis = $SumDiffs4 / ($N * $S**4);
-        # was $OUT{"Kurtosis"} = $Kurtosis = ($SumDiffs4 / (($N-1)*($S**4))) - 3;
-        $OUT{"PopKurt"} = $PopKurtosis = ($N * ($N+1)) / (($N-1) * ($N-2) * ($N-3)) * $Kurtosis - ((3*($N-1)^2) / (($N-2) * ($N-3)));
         $OUT{"SEM"} = $SEM = $S / sqrt($N);
         if ($S > 0 && $N > 3) {
         $OUT{"Skew"} = $Skew = ($N * $SumDiffs3) / (($N-1) * ($N-2) * ($S ** 3));
@@ -349,7 +350,14 @@ if (! $stdout) {
         $OUT{"Conf_Int"} = sprintf("%g:%g",$ConfIntLow,$ConfIntHi);
         $OUT{"Quantiles"} = $QUANTSTR;
         }
-    }
+        
+    # only try to calculate this if $XMul > 0 (otherwise div by zero)
+    if ($XMul > 0) {
+        $OUT{"Kurtosis"} = $Kurtosis = $SumDiffs4 / ($N * $S**4);
+        # was $OUT{"Kurtosis"} = $Kurtosis = ($SumDiffs4 / (($N-1)*($S**4))) - 3;
+        $OUT{"PopKurt"} = $PopKurtosis = ($N * ($N+1)) / (($N-1) * ($N-2) * ($N-3)) * $Kurtosis - ((3*($N-1)^2) / (($N-2) * ($N-3)));
+     }   
+
 
     if (!$ONLY && !$wide && $gfmt == 0) {  # don't include in golang version
     print  "Sum       $sum",
@@ -403,7 +411,7 @@ if (! $stdout) {
             print  "\n          [Pop'n Kurtosis is normalized to sample size; PK=0 for a ND]\n"
         }
     } elsif (!$ONLY && !$QUIET) {
-        print STDERR "#Std Dev = 0 or N <=3 or printing wide; Skipping all Skewness & Kurtosis cal'ns.\n";
+        print STDERR "(stats): #Std Dev = 0 or N <=3 or printing wide; Skipping all Skewness & Kurtosis cal'ns.\n";
     }
 
     if (!$ONLY && $wide) {
@@ -421,7 +429,7 @@ if (! $stdout) {
                 printf "\t%g\t%g\t%g\t%g\n", $Skew,$StdSkew,$Kurtosis,$PopKurtosis;
             } else { print "\t$Skew\t$StdSkew\t$Kurtosis\t$PopKurtosis\n";}
         } elsif (! $QUIET) {
-            print  STDERR "NA\tNA\nStd Dev = 0 or N <=3; Skipping all Skewness & Kurtosis cal'ns.\n";
+            print  STDERR "(stats): NA\tNA\nStd Dev = 0 or N <=3; Skipping all Skewness & Kurtosis cal'ns.\n";
         }
     }
 
@@ -477,8 +485,8 @@ if (! $stdout) {
                 print "\nIf points are jammed at one end, use '--xf=ln' to spread them.\n";
             }
         }
-    } else {
-        print STDERR "\nINFO: Identical numbers in input; no range, no distribution\n";
+    } elsif ($dist != 0) {
+        print STDERR "\n(stats): Identical numbers in input; no range, no distribution\n";
     }
 }
  
@@ -623,25 +631,32 @@ Example 4:
 Calculate the file size distribution in the current directory:
 
 \$ ls -l | awk '{print \$5}'  | stats  --dist=2 --x=20 --y=10
-Sum       5.72512e+08
-Number    172
-Mean      3.32856e+06
-Median    13918
+Number    401
+Mean      1.10608e+07
+Median    10642
 Mode      4096
-NModes    11
+NModes    13
 Min       0
-Max       2.84115e+08
-Range     2.84115e+08
-Variance  7.56924e+14
-Std_Dev   2.75123e+07
-SEM       2.09779e+06
-95% Conf  -783109 to 7.44023e+06 **
-          (for a normal distribution - see skew)
-Skew      9.3415
-          (skew = 0 for a symmetric dist)
-Std_Skew  50.0155
-Kurtosis  84.6439 **
-          (K=3 for a normal dist)
+Max       1.88495e+09
+Range     1.88495e+09
+Variance  1.15667e+16
+Std_Dev   1.07549e+08
+SEM       5.37073e+06
+95% Conf  534133 to 2.15874e+07
+          [for a normal distribution (ND) - see skew]
+Quantiles (5)
+        Index   Value
+1       80      226
+2       160     3400
+3       240     21132
+4       320     438552
+Skew      14.5696
+          [Skew=0 for a symmetric dist]
+Std_Skew  119.109
+Kurtosis  237.437
+          [Kurtosis=3 for a ND]
+PopKurt   0.594993
+          [Pop'n Kurtosis is normalized to sample size; PK=0 for a ND]
 
 ** This assumes normal distribution , but since this distribution is 
    extremely skewed (see above Kurtosis value, and the plot below), the 
@@ -651,10 +666,10 @@ Kurtosis  84.6439 **
    For specific plots or analyses, see: <http://www.wessa.net/desc.wasp>
 
 Distribution
-X BinSize 14205747.2
-Y BinSize  18.7777777777778
+X BinSize 94247474.3
+Y BinSize  43.8888888888889
 
-YMax:169
+YMax:395
       |*                   
       |                    
       |                    
@@ -667,7 +682,7 @@ YMax:169
       | *******************
       |--------------------
   X Min               X Max
-   0.00        284114944.00 
+   0.00        1884949486.00 
 
 If points are jammed at one end, use '--xf=ln' to spread them.
 
@@ -685,46 +700,56 @@ suggested ln transform.
 NB: the stats are calculated with the transformed data.
 
 \$ ls -l | awk '{print \$5}'  | stats --xf='ln' --dist=2 --x=20 --y=10
-Sum       1597.38
-Number    172
-Mean      9.28707
-Median    9.54093
+
+Sum       3697.07
+Number    401
+Mean      9.21961
+Median    9.27256
 Mode      8.31777
-NModes    11
+NModes    13
 Min       0
-Max       19.4649
-Range     19.4649
-Variance  12.8159
-Std_Dev   3.57994
-SEM       0.272968
-95% Conf  8.75205 to 9.82208
-          (for a normal distribution - see skew)
-Skew      -0.297273
-          (skew = 0 for a symmetric dist)
-Std_Skew  -1.59164
-Kurtosis  0.47218
-          (K=3 for a normal dist)
+Max       21.3572
+Range     21.3572
+Variance  17.2889
+Std_Dev   4.15799
+SEM       0.20764
+95% Conf  8.81264 to 9.62659
+          [for a normal distribution (ND) - see skew]
+Quantiles (5)
+        Index   Value
+1       80      5.42053499927229
+2       160     8.13153071060425
+3       240     9.95854375828421
+4       320     12.9912336698525
+Skew      0.114128
+          [Skew=0 for a symmetric dist]
+Std_Skew  0.933012
+Kurtosis  2.61252
+          [Kurtosis=3 for a ND]
+PopKurt   -0.000939166
+          [Pop'n Kurtosis is normalized to sample size; PK=0 for a ND]
 
 
 Distribution
-X BinSize 0.973244472331889
-Y BinSize  2.66666666666667
+X BinSize 1.06785834298047
+Y BinSize  5.33333333333333
 
-YMax:24
-      |           *        
+YMax:48
+      |       *            
       |         *          
       |        *           
-      |            *       
-      |     *    *         
-      |                    
-      |      **     *      
-      |    *          *    
-      |**            *     
-      |  **            ****
+      |           *        
+      |    **       *      
+      |      *   *         
+      |   *        * *     
+      | **                 
+      |*              *    
+      |                ****
       |--------------------
   X Min               X Max
-   0.00               19.46 
+   0.00               21.36 
 
+If points are jammed at one end, use '--xf=ln' to spread them.
 
  = Hint: while the above plotting function is better than nothing, 
  consider using the excellent 'feedgnuplot' to plot columns of numbers. 
