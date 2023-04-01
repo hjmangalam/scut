@@ -12,10 +12,10 @@ a 'join' function not unlike the *nix
 (search for 'join') command.
 
 Being unoptimized perl, it is considerably slower than 'cut' but it can do
-things that cut can't dream of, so if you have 100s of GB of input to slice
+things that cut can't do, so if you have 100s of GB of input to slice
 & dice, it may be worthwhile to spend some time learning the finer points
 of 'cut' and 'awk', but it you just need to chew thru 100s of MB to GBs 
-of complext text, scut may be of interest.
+of complex text, scut may be of interest.
 
 In addition to scut, there are 2 other small utilities here.
 
@@ -25,26 +25,36 @@ developed with and often used with scut.  It is similar to column/columns.
 Both 'scut' and 'cols' are documented in the included 
 [scut_cols_HOWTO.html](http://moo.nac.uci.edu/~hjm/scut_cols_HOWTO.html)
 
-'stats' is a nther Perl utility to consume all numeric-like data fed to it via STDIN
+'stats' is another Perl utility to consume all numeric-like data fed to it via STDIN
 and emit some useful descriptive statistics. 'stats -h' will give you all 
 the help you need.
 It also has the ability to stream-transform numeric
 input and apply stats on those transformed data or print it to STDOUT without
-the stats calculation.   
+the stats calculation.
 
 Those transforms are:  log10, ln, sqrt, x^2, x^3, 1/x, sin, cos, tan, asin,
 acos, atan, round, abs, exp, trunc (integer part), frac (decimal part)
 
 It can also emit only the value you're interested in.  So if you  only want
-the 'Median', if you pipe some stream of numbers | 'stats --medium', it will
-provide an unadorned single value of the median.  
+the 'Median', if you pipe some stream of numbers | 'stats --median', it will
+provide an unadorned single value of the median.
+
+## Recent Changes
+
+### Apr 1 , 2023
+
+- added sample size estimation: --sample=#, where # is the Margin Of Error that you estimate 
+in the sample population. Uses the input number pool to estimate the std_dev, and requires
+you provide the confidence interval (ex --conf=90) you'll be using (default 95%).
+
+- added '--all' to print all the descriptive stats, otherwise the output is still as above.
 
 eg, calculate the file size distribution in the current directory:
 
 ````
-# try the following with and without the '--xf=ln' and the '--gfmt'
+# try the following with and without the '--xf=ln' and the '--raw'
 
-   $ ls -l | awk '{print $5}' |stats --gfmt --xf=ln --dist=2 --x=20 --y=10
+   $ ls -l | awk '{print $5}' |stats --raw --xf=ln --dist=2 --x=20 --y=10
 or $ ls -l | scut -f=4        |stats --dist=2 --x=20 --y=10
 
 # which yields:
